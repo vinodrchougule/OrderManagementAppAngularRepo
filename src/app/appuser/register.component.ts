@@ -12,6 +12,7 @@ import {
 
 import { AuthService, RegisterRequest } from '../services/auth.service';
 
+
 export interface UserRegistration {
   username: string;
   email: string;

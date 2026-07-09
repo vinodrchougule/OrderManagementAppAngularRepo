@@ -9,6 +9,7 @@ export interface RegisterRequest {
   role: string;
 }
 
+
 export interface RegisterResponse {
   [key: string]: any;
 }
