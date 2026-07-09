@@ -1,0 +1,104 @@
+<div class="register-wrapper">
+  <div class="register-card">
+    <h2 class="register-title">Create an Account</h2>
+    <p class="register-subtitle">Register to access Order Management App</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="Enter username"
+          [class.invalid]="f['username'].invalid && (f['username'].touched || submitted)"
+        />
+        <div
+          class="error-text"
+          *ngIf="f['username'].invalid && (f['username'].touched || submitted)"
+        >
+          <span *ngIf="f['username'].errors?.['required']">Username is required.</span>
+          <span *ngIf="f['username'].errors?.['minlength']">Username must be at least 3 characters.</span>
+          <span *ngIf="f['username'].errors?.['maxlength']">Username cannot exceed 20 characters.</span>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter email address"
+          [class.invalid]="f['email'].invalid && (f['email'].touched || submitted)"
+        />
+        <div
+          class="error-text"
+          *ngIf="f['email'].invalid && (f['email'].touched || submitted)"
+        >
+          <span *ngIf="f['email'].errors?.['required']">Email is required.</span>
+          <span *ngIf="f['email'].errors?.['email']">Enter a valid email address.</span>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Enter password"
+          [class.invalid]="f['password'].invalid && (f['password'].touched || submitted)"
+        />
+        <div
+          class="error-text"
+          *ngIf="f['password'].invalid && (f['password'].touched || submitted)"
+        >
+          <span *ngIf="f['password'].errors?.['required']">Password is required.</span>
+          <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 8 characters.</span>
+          <span *ngIf="f['password'].errors?.['weakPassword']">Password must include at least one letter and one number.</span>
+        </div>
+      </div>
+
+      <!-- Role -->
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select
+          id="role"
+          formControlName="role"
+          [class.invalid]="f['role'].invalid && (f['role'].touched || submitted)"
+        >
+          <option value="" disabled>Select a role</option>
+          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+        </select>
+        <div
+          class="error-text"
+          *ngIf="f['role'].invalid && (f['role'].touched || submitted)"
+        >
+          <span *ngIf="f['role'].errors?.['required']">Please select a role.</span>
+        </div>
+      </div>
+
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <div class="server-error" *ngIf="serverError">
+        {{ serverError }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="submitting">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="submitting">
+          {{ submitting ? 'Registering...' : 'Register' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
