@@ -1,0 +1,75 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <h2 class="login-title">Welcome Back</h2>
+    <p class="login-subtitle">Log in to access Order Management App</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="Enter username"
+          [class.invalid]="f['username'].invalid && (f['username'].touched || submitted())"
+        />
+        <div
+          class="error-text"
+          *ngIf="f['username'].invalid && (f['username'].touched || submitted())"
+        >
+          <span *ngIf="f['username'].errors?.['required']">Username is required.</span>
+          <span *ngIf="f['username'].errors?.['minlength']">Username must be at least 3 characters.</span>
+          <span *ngIf="f['username'].errors?.['maxlength']">Username cannot exceed 20 characters.</span>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Enter password"
+          [class.invalid]="f['password'].invalid && (f['password'].touched || submitted())"
+        />
+        <div
+          class="error-text"
+          *ngIf="f['password'].invalid && (f['password'].touched || submitted())"
+        >
+          <span *ngIf="f['password'].errors?.['required']">Password is required.</span>
+          <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 8 characters.</span>
+        </div>
+      </div>
+
+      <!-- Remember me / Forgot password -->
+      <div class="form-row">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="rememberMe" />
+          Remember me
+        </label>
+        <a href="javascript:void(0)" class="link">Forgot password?</a>
+      </div>
+
+      <div class="success-message" *ngIf="successMessage()">
+        {{ successMessage() }}
+      </div>
+
+      <div class="server-error" *ngIf="serverError()">
+        {{ serverError() }}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+          {{ submitting() ? 'Logging in...' : 'Log In' }}
+        </button>
+      </div>
+
+      <p class="signup-prompt">
+        Don't have an account? <a routerLink="/register" class="link">Register</a>
+      </p>
+    </form>
+  </div>
+</div>

@@ -14,11 +14,11 @@
           type="text"
           formControlName="username"
           placeholder="Enter username"
-          [class.invalid]="f['username'].invalid && (f['username'].touched || submitted)"
+          [class.invalid]="f['username'].invalid && (f['username'].touched || submitted())"
         />
         <div
           class="error-text"
-          *ngIf="f['username'].invalid && (f['username'].touched || submitted)"
+          *ngIf="f['username'].invalid && (f['username'].touched || submitted())"
         >
           <span *ngIf="f['username'].errors?.['required']">Username is required.</span>
           <span *ngIf="f['username'].errors?.['minlength']">Username must be at least 3 characters.</span>
@@ -34,11 +34,11 @@
           type="email"
           formControlName="email"
           placeholder="Enter email address"
-          [class.invalid]="f['email'].invalid && (f['email'].touched || submitted)"
+          [class.invalid]="f['email'].invalid && (f['email'].touched || submitted())"
         />
         <div
           class="error-text"
-          *ngIf="f['email'].invalid && (f['email'].touched || submitted)"
+          *ngIf="f['email'].invalid && (f['email'].touched || submitted())"
         >
           <span *ngIf="f['email'].errors?.['required']">Email is required.</span>
           <span *ngIf="f['email'].errors?.['email']">Enter a valid email address.</span>
@@ -53,11 +53,11 @@
           type="password"
           formControlName="password"
           placeholder="Enter password"
-          [class.invalid]="f['password'].invalid && (f['password'].touched || submitted)"
+          [class.invalid]="f['password'].invalid && (f['password'].touched || submitted())"
         />
         <div
           class="error-text"
-          *ngIf="f['password'].invalid && (f['password'].touched || submitted)"
+          *ngIf="f['password'].invalid && (f['password'].touched || submitted())"
         >
           <span *ngIf="f['password'].errors?.['required']">Password is required.</span>
           <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 8 characters.</span>
@@ -71,35 +71,39 @@
         <select
           id="role"
           formControlName="role"
-          [class.invalid]="f['role'].invalid && (f['role'].touched || submitted)"
+          [class.invalid]="f['role'].invalid && (f['role'].touched || submitted())"
         >
           <option value="" disabled>Select a role</option>
           <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
         </select>
         <div
           class="error-text"
-          *ngIf="f['role'].invalid && (f['role'].touched || submitted)"
+          *ngIf="f['role'].invalid && (f['role'].touched || submitted())"
         >
           <span *ngIf="f['role'].errors?.['required']">Please select a role.</span>
         </div>
       </div>
 
-      <div class="success-message" *ngIf="successMessage">
-        {{ successMessage }}
+      <div class="success-message" *ngIf="successMessage()">
+        {{ successMessage() }}
       </div>
 
-      <div class="server-error" *ngIf="serverError">
-        {{ serverError }}
+      <div class="server-error" *ngIf="serverError()">
+        {{ serverError() }}
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="submitting">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="submitting()">
           Cancel
         </button>
-        <button type="submit" class="btn btn-primary" [disabled]="submitting">
-          {{ submitting ? 'Registering...' : 'Register' }}
+        <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+          {{ submitting() ? 'Registering...' : 'Register' }}
         </button>
       </div>
+
+      <p class="login-prompt">
+        Already have an account? <a routerLink="/login" class="link">Log in</a>
+      </p>
     </form>
   </div>
 </div>

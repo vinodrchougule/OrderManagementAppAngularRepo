@@ -6,69 +6,45 @@ import {
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
-  Validators,
-  AbstractControl,
-  ValidationErrors
+  Validators
 } from '@angular/forms';
 
-import { AuthService, RegisterRequest } from '../services/auth.service';
+import { AuthService, LoginRequest, LoginResponse } from '../services/auth.service';
 
-
-export interface UserRegistration {
+export interface UserLogin {
   username: string;
-  email: string;
   password: string;
-  role: string;
+  rememberMe: boolean;
 }
 
 @Component({
-  selector: 'app-register',
+  selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
-export class RegisterComponent {
-  roles: string[] = ['Admin', 'Manager', 'Employee', 'Customer'];
-
+export class LoginComponent {
   submitting = signal(false);
   submitted = signal(false);
   serverError = signal('');
   successMessage = signal('');
 
-  registerForm!: FormGroup;
+  loginForm!: FormGroup;
 
   constructor(private fb: FormBuilder, private authService: AuthService) {
-    this.registerForm = this.fb.group({
+    this.loginForm = this.fb.group({
       username: [
         '',
         [Validators.required, Validators.minLength(3), Validators.maxLength(20)]
       ],
-      email: ['', [Validators.required, Validators.email]],
-      password: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(8),
-          RegisterComponent.passwordStrengthValidator
-        ]
-      ],
-      role: ['', Validators.required]
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      rememberMe: [false]
     });
   }
 
-  // Custom validator: requires at least one letter and one number
-  static passwordStrengthValidator(
-    control: AbstractControl
-  ): ValidationErrors | null {
-    const value: string = control.value || '';
-    const hasLetter = /[A-Za-z]/.test(value);
-    const hasNumber = /\d/.test(value);
-    return hasLetter && hasNumber ? null : { weakPassword: true };
-  }
-
   get f() {
-    return this.registerForm.controls;
+    return this.loginForm.controls;
   }
 
   onSubmit(): void {
@@ -76,34 +52,29 @@ export class RegisterComponent {
     this.serverError.set('');
     this.successMessage.set('');
 
-    if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
       return;
     }
 
     this.submitting.set(true);
-    const payload: RegisterRequest = this.registerForm.value as UserRegistration;
+    const formValue: UserLogin = this.loginForm.value as UserLogin;
+    const payload: LoginRequest = {
+      userName: formValue.username,
+      password: formValue.password
+    };
 
-    this.authService.register(payload).subscribe({
-      next: () => {
+    this.authService.login(payload).subscribe({
+      next: (res: LoginResponse) => {
         this.submitting.set(false);
-        this.successMessage.set('Registration successful! You can now log in.');
-        this.registerForm.reset();
-        this.submitted.set(false);
+        this.successMessage.set((res && res['message']) || 'Login successful!');
       },
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
         this.serverError.set(this.extractErrorMessage(err));
-        console.error('Registration request failed:', err);
+        console.error('Login request failed:', err);
       }
     });
-  }
-
-  onCancel(): void {
-    this.registerForm.reset();
-    this.submitted.set(false);
-    this.serverError.set('');
-    this.successMessage.set('');
   }
 
   private extractErrorMessage(err: HttpErrorResponse): string {
@@ -130,6 +101,9 @@ export class RegisterComponent {
         }
       }
     }
-    return 'Registration failed. Please try again.';
+    if (err.status === 401 || err.status === 400) {
+      return 'Invalid username or password.';
+    }
+    return 'Login failed. Please try again.';
   }
 }

@@ -14,6 +14,15 @@ export interface RegisterResponse {
   [key: string]: any;
 }
 
+export interface LoginRequest {
+  userName: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  [key: string]: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,5 +33,9 @@ export class AuthService {
 
   register(payload: RegisterRequest): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(`${this.baseUrl}/register`, payload);
+  }
+
+  login(payload: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, payload);
   }
 }
