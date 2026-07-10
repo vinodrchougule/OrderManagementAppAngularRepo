@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -32,7 +32,11 @@ export class LoginComponent {
 
   loginForm!: FormGroup;
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.loginForm = this.fb.group({
       username: [
         '',
@@ -68,6 +72,10 @@ export class LoginComponent {
       next: (res: LoginResponse) => {
         this.submitting.set(false);
         this.successMessage.set((res && res['message']) || 'Login successful!');
+        this.authService.setSession(res);
+
+        // Briefly show the success message before redirecting to Home.
+        setTimeout(() => this.router.navigate(['/home']), 900);
       },
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
