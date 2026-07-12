@@ -5,15 +5,25 @@
     <h2 class="page-title">Manage Orders</h2>
 
     <div class="orders-toolbar">
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Search orders..."
-        [value]="quickFilterText()"
-        (input)="onQuickFilterInput($any($event.target).value)"
-      />
+      <div class="search-group">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search orders..."
+          [value]="quickFilterText()"
+          (input)="onQuickFilterInput($any($event.target).value)"
+        />
+        <button type="button" class="toolbar-btn" (click)="onClearSearch()">Clear</button>
+      </div>
 
       <div class="toolbar-actions">
+        <button type="button" class="toolbar-btn primary" (click)="onCreateNewOrder()">
+          <svg class="plus-icon" width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor" />
+          </svg>
+          Create New Order
+        </button>
+
         <div class="columns-menu">
           <button type="button" class="toolbar-btn" (click)="toggleColumnsMenu()">
             Columns
@@ -29,6 +39,19 @@
             </label>
           </div>
         </div>
+
+        <button
+          type="button"
+          class="toolbar-btn"
+          [class.active]="filterRowVisible()"
+          title="Toggle filter row"
+          (click)="toggleFilterRow()"
+        >
+          <svg class="funnel-icon" width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 4h18l-7 9v5l-4 2v-7L3 4z" fill="currentColor" />
+          </svg>
+          Filter
+        </button>
 
         <button type="button" class="toolbar-btn" (click)="onRefresh()">Refresh</button>
         <button type="button" class="toolbar-btn primary" (click)="onExportExcel()">
@@ -47,6 +70,7 @@
         [pagination]="true"
         [paginationPageSize]="10"
         [paginationPageSizeSelector]="[10, 25, 50]"
+        [domLayout]="'autoHeight'"
         [loading]="loading()"
         [animateRows]="true"
         (gridReady)="onGridReady($event)"

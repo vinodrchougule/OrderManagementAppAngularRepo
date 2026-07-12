@@ -29,6 +29,29 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   Cancelled: '#b91c1c'
 };
 
+const MONTH_ABBREVIATIONS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
+/**
+ * Formats an ISO "yyyy-MM-dd" date string as "dd-Mon-yyyy" (e.g. "01-Jul-2026").
+ * Parses the string parts directly rather than using Date getters, since Date
+ * getters read local time and can roll the date back/forward a day depending
+ * on the browser's timezone offset for a date-only ISO string.
+ */
+function formatOrderDate(value: string | null | undefined): string {
+  if (!value) {
+    return '';
+  }
+  const [year, month, day] = value.split('-');
+  if (!year || !month || !day) {
+    return value;
+  }
+  const monthAbbr = MONTH_ABBREVIATIONS[Number(month) - 1] ?? month;
+  return `${day}-${monthAbbr}-${year}`;
+}
+
 interface ToggleableColumn {
   colId: string;
   label: string;
@@ -48,6 +71,7 @@ export class ManageOrdersComponent {
   loading = signal(false);
   quickFilterText = signal('');
   columnsMenuOpen = signal(false);
+  filterRowVisible = signal(false); // controls the per-column floating filter row
 
   toggleableColumns = signal<ToggleableColumn[]>([
     { colId: 'orderId', label: 'Order Id', visible: true },
@@ -62,87 +86,23 @@ export class ManageOrdersComponent {
   theme = themeQuartz.withParams({
     accentColor: '#2563eb',
     borderRadius: 6,
-    headerFontWeight: 600
+    headerFontWeight: 600,
+    headerBackgroundColor: '#eef2fb', // header bar background
+    chromeBackgroundColor: '#eef2fb' // non-data chrome (incl. the pagination/footer bar) - same colour as the header so they match
   });
 
   defaultColDef: ColDef = {
     sortable: true,
     filter: true,
-    floatingFilter: true,
     resizable: true,
     minWidth: 110
+    // floatingFilter is NOT set here - it's applied per-column in buildColumnDefs()
+    // below, driven by filterRowVisible(), so the row can be toggled on/off.
   };
 
-  columnDefs: ColDef<Order>[] = [
-    {
-      colId: 'orderId',
-      field: 'orderId',
-      headerName: 'Order Id',
-      filter: 'agNumberColumnFilter',
-      minWidth: 120
-    },
-    {
-      colId: 'orderDate',
-      field: 'orderDate',
-      headerName: 'Order Date',
-      minWidth: 140,
-      valueFormatter: (params) => (params.value ? new Date(params.value).toLocaleDateString() : '')
-    },
-    {
-      colId: 'customerId',
-      field: 'customerId',
-      headerName: 'Customer Id',
-      filter: 'agNumberColumnFilter',
-      minWidth: 130
-    },
-    {
-      colId: 'customerName',
-      field: 'customerName',
-      headerName: 'Customer Name',
-      minWidth: 180
-    },
-    {
-      colId: 'totalAmount',
-      field: 'totalAmount',
-      headerName: 'Total Amount',
-      filter: 'agNumberColumnFilter',
-      type: 'rightAligned',
-      minWidth: 150,
-      valueFormatter: (params) =>
-        typeof params.value === 'number'
-          ? params.value.toLocaleString('en-IN', {
-              style: 'currency',
-              currency: 'INR',
-              minimumFractionDigits: 2
-            })
-          : ''
-    },
-    {
-      colId: 'status',
-      field: 'status',
-      headerName: 'Status',
-      minWidth: 140,
-      cellRenderer: (params: ICellRendererParams<Order, OrderStatus>) => {
-        const value = params.value;
-        if (!value) {
-          return '';
-        }
-        const color = STATUS_COLORS[value] ?? '#374151';
-        return `<span class="status-badge" style="color:${color}; background-color:${color}1a;">${value}</span>`;
-      }
-    },
-    {
-      colId: 'actions',
-      headerName: 'Actions',
-      minWidth: 130,
-      maxWidth: 130,
-      sortable: false,
-      filter: false,
-      resizable: false,
-      pinned: 'right',
-      cellRenderer: OrderActionsCellRendererComponent
-    }
-  ];
+  // Built as a method (not a static array) so it can be regenerated with an
+  // updated floatingFilter value whenever the Filter button is toggled.
+  columnDefs: ColDef<Order>[] = this.buildColumnDefs();
 
   private gridApi?: GridApi<Order>;
 
@@ -150,9 +110,125 @@ export class ManageOrdersComponent {
     this.gridApi = event.api;
   }
 
+  toggleFilterRow(): void {
+    this.filterRowVisible.update((visible) => !visible); // flip the toggle state
+    this.columnDefs = this.buildColumnDefs(); // rebuild colDefs with new floatingFilter value
+    this.gridApi?.setGridOption('columnDefs', this.columnDefs); // push the change into the live grid
+  }
+
+  private buildColumnDefs(): ColDef<Order>[] {
+    const floatingFilter = this.filterRowVisible(); // read current toggle state
+
+    return [
+      {
+        colId: 'orderId',
+        field: 'orderId',
+        headerName: 'Order Id',
+        filter: 'agNumberColumnFilter',
+        floatingFilter,
+        flex: 1,
+        minWidth: 100,
+        headerClass: 'header-center',
+        cellClass: 'cell-center'
+      },
+      {
+        colId: 'orderDate',
+        field: 'orderDate',
+        headerName: 'Order Date',
+        floatingFilter,
+        flex: 1,
+        minWidth: 110,
+        headerClass: 'header-center',
+        cellClass: 'cell-center',
+        valueFormatter: (params) => formatOrderDate(params.value)
+      },
+      {
+        colId: 'customerId',
+        field: 'customerId',
+        headerName: 'Customer Id',
+        filter: 'agNumberColumnFilter',
+        floatingFilter,
+        flex: 1,
+        minWidth: 110,
+        headerClass: 'header-center',
+        cellClass: 'cell-center'
+      },
+      {
+        colId: 'customerName',
+        field: 'customerName',
+        headerName: 'Customer Name',
+        floatingFilter,
+        flex: 1.4,
+        minWidth: 150,
+        headerClass: 'header-left',
+        cellClass: 'cell-left'
+      },
+      {
+        colId: 'totalAmount',
+        field: 'totalAmount',
+        headerName: 'Total Amount',
+        filter: 'agNumberColumnFilter',
+        floatingFilter,
+        type: 'rightAligned',
+        flex: 1,
+        minWidth: 130,
+        valueFormatter: (params) =>
+          typeof params.value === 'number'
+            ? params.value.toLocaleString('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2
+              })
+            : ''
+      },
+      {
+        colId: 'status',
+        field: 'status',
+        headerName: 'Status',
+        floatingFilter,
+        flex: 1,
+        minWidth: 110,
+        headerClass: 'header-center',
+        cellClass: 'cell-center',
+        cellRenderer: (params: ICellRendererParams<Order, OrderStatus>) => {
+          const value = params.value;
+          if (!value) {
+            return '';
+          }
+          const color = STATUS_COLORS[value] ?? '#374151';
+          return `<span class="status-badge" style="color:${color}; background-color:${color}1a;">${value}</span>`;
+        }
+      },
+      {
+        colId: 'actions',
+        headerName: 'Actions',
+        minWidth: 90,
+        maxWidth: 90,
+        sortable: false,
+        filter: false,
+        resizable: false,
+        pinned: 'right',
+        headerClass: ['header-center', 'actions-col-bg'], // light tint that complements the header/footer colour
+        cellClass: ['cell-center', 'actions-col-bg'],
+        cellRenderer: OrderActionsCellRendererComponent
+      }
+    ];
+  }
+
+  onCreateNewOrder(): void {
+    // TODO: navigate to a "create order" form/page once that view exists.
+    console.log('Create new order clicked');
+  }
+
   onQuickFilterInput(value: string): void {
     this.quickFilterText.set(value);
     this.gridApi?.setGridOption('quickFilterText', value);
+  }
+
+  onClearSearch(): void {
+    this.quickFilterText.set(''); // empty the search box
+    this.gridApi?.setGridOption('quickFilterText', ''); // drop the active quick filter so hidden rows reappear
+    this.onRefresh(); // reload the grid's row data
   }
 
   toggleColumnsMenu(): void {

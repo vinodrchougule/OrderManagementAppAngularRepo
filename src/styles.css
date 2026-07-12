@@ -34,13 +34,48 @@ body {
    targeting grid-injected markup (status badges, striped rows) must be global. */
 .status-badge {
   display: inline-block;
-  padding: 3px 10px;
+  min-width: 90px;
+  padding: 0 10px; /* removed vertical padding so height hugs the text */
+  line-height: 1.6; /* small breathing room without adding block height like padding did */
   font-size: 12px;
   font-weight: 600;
-  border-radius: 999px;
+  text-align: center;
+  border-radius: 0; /* precise rectangle instead of a rounded pill */
   white-space: nowrap;
 }
 
 .ag-row-odd {
   background-color: #f9fafb;
+}
+
+/* Pagination/footer bar - chromeBackgroundColor in the theme params doesn't
+   reliably reach this panel, so its DOM class is targeted directly to
+   guarantee it matches the header bar colour (#eef2fb, set in
+   manageorders.component.ts theme.withParams). */
+.ag-paging-panel {
+  background-color: #eef2fb;
+}
+
+/* Column header/value alignment (applied via colDef headerClass/cellClass). */
+.header-center .ag-header-cell-label {
+  justify-content: center;
+}
+
+.header-left .ag-header-cell-label {
+  justify-content: flex-start;
+}
+
+.cell-center {
+  text-align: center;
+}
+
+.cell-left {
+  text-align: left;
+}
+
+/* Actions column - light tint that complements the grid's header/footer colour
+   (#eef2fb, set via theme.withParams in manageorders.component.ts). Applied to
+   both the header cell and body cells via headerClass/cellClass. */
+.actions-col-bg {
+  background-color: #f5f8ff;
 }

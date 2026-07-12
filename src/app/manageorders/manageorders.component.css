@@ -14,6 +14,13 @@
   flex-wrap: wrap;
 }
 
+.search-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 260px;
+}
+
 .search-input {
   flex: 1 1 260px;
   max-width: 340px;
@@ -62,6 +69,26 @@
   background-color: #1d4ed8;
 }
 
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-btn.active {
+  color: #2563eb;
+  background-color: #eff6ff;
+  border-color: #2563eb;
+}
+
+.funnel-icon {
+  flex-shrink: 0;
+}
+
+.plus-icon {
+  flex-shrink: 0;
+}
+
 .columns-menu {
   position: relative;
 }
@@ -91,10 +118,12 @@
 
 .grid-wrapper {
   width: 100%;
-  height: 560px;
+  /* height is intentionally not set here - domLayout="autoHeight" on the grid
+     sizes it to exactly fit its rendered rows (10 per page), no more, no less. */
 }
 
 .orders-grid {
   width: 100%;
-  height: 100%;
+  /* no height: 100% here either - it would resolve against .grid-wrapper's
+     now-auto height, which is 0/undefined; autoHeight sizes this element itself. */
 }
