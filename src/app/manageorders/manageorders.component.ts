@@ -16,6 +16,9 @@ import { AppHeaderComponent } from '../shared/app-header.component';
 import { Order, OrderStatus } from './order.model';
 import { MOCK_ORDERS } from './manageorders.mock-data';
 import { OrderActionsCellRendererComponent } from './order-actions-cell-renderer.component';
+import { CreateOrderModalComponent } from './create-order-modal/create-order-modal.component'; // new Create New Order modal
+import { NewOrderPayload } from './create-order.model'; // new modal's save payload type
+import { formatOrderDate } from './order-date.util'; // moved out of this file so the modal can reuse it
 
 // Registers every free Community feature (sorting, filtering, pagination,
 // column moving/resizing, row virtualisation, cell renderers, etc.).
@@ -29,29 +32,6 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   Cancelled: '#b91c1c'
 };
 
-const MONTH_ABBREVIATIONS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-
-/**
- * Formats an ISO "yyyy-MM-dd" date string as "dd-Mon-yyyy" (e.g. "01-Jul-2026").
- * Parses the string parts directly rather than using Date getters, since Date
- * getters read local time and can roll the date back/forward a day depending
- * on the browser's timezone offset for a date-only ISO string.
- */
-function formatOrderDate(value: string | null | undefined): string {
-  if (!value) {
-    return '';
-  }
-  const [year, month, day] = value.split('-');
-  if (!year || !month || !day) {
-    return value;
-  }
-  const monthAbbr = MONTH_ABBREVIATIONS[Number(month) - 1] ?? month;
-  return `${day}-${monthAbbr}-${year}`;
-}
-
 interface ToggleableColumn {
   colId: string;
   label: string;
@@ -61,7 +41,7 @@ interface ToggleableColumn {
 @Component({
   selector: 'app-manage-orders',
   standalone: true,
-  imports: [CommonModule, AppHeaderComponent, AgGridAngular],
+  imports: [CommonModule, AppHeaderComponent, AgGridAngular, CreateOrderModalComponent], // registers the new modal
   templateUrl: './manageorders.component.html',
   styleUrls: ['./manageorders.component.css']
 })
@@ -72,6 +52,7 @@ export class ManageOrdersComponent {
   quickFilterText = signal('');
   columnsMenuOpen = signal(false);
   filterRowVisible = signal(false); // controls the per-column floating filter row
+  createOrderModalOpen = signal(false); // controls the Create New Order modal's visibility
 
   toggleableColumns = signal<ToggleableColumn[]>([
     { colId: 'orderId', label: 'Order Id', visible: true },
@@ -216,8 +197,27 @@ export class ManageOrdersComponent {
   }
 
   onCreateNewOrder(): void {
-    // TODO: navigate to a "create order" form/page once that view exists.
-    console.log('Create new order clicked');
+    this.createOrderModalOpen.set(true); // open the modal
+  }
+
+  onCreateOrderModalClosed(): void {
+    this.createOrderModalOpen.set(false); // Cancel/X/backdrop click - discard and close
+  }
+
+  onOrderSaved(payload: NewOrderPayload): void {
+    // TODO: replace with a real POST to the Orders API once it's available;
+    // for now, generate a local id and prepend the new row so it's visible immediately.
+    const newOrderId = this.rowData.reduce((max, o) => Math.max(max, o.orderId), 0) + 1;
+    const newOrder: Order = {
+      orderId: newOrderId,
+      orderDate: payload.orderDate,
+      customerId: payload.customerId,
+      customerName: payload.customerName,
+      totalAmount: payload.totalAmount,
+      status: 'Pending'
+    };
+    this.rowData = [newOrder, ...this.rowData]; // prepend so the new order appears first
+    this.createOrderModalOpen.set(false); // close the modal (signal write also guarantees the grid re-renders)
   }
 
   onQuickFilterInput(value: string): void {

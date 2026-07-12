@@ -1,0 +1,252 @@
+/* Full-viewport overlay; flex-centers the card and scrolls the backdrop on
+   very short screens so the card is never clipped. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(17, 24, 39, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+/* Card sizes itself to the viewport at every resolution: fluid width capped
+   at 760px, and its own scrollbar once content exceeds 90vh in height. */
+.modal-card {
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  background-color: #eef2fb; /* light header bar, matches the grid's header colour */
+  border-radius: 10px 10px 0 0;
+  cursor: move; /* signals the bar is draggable */
+  user-select: none; /* avoid selecting heading text while dragging */
+  z-index: 1;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.icon-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+  color: #6b7280;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.icon-close-btn:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.icon-close-btn.small {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  border: 1px solid #d1d5db;
+}
+
+.modal-body {
+  padding: 18px 20px;
+}
+
+/* Header fields row: wraps to a single column on narrow screens instead of
+   compressing inputs illegibly. */
+.header-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+/* Item entry row: same responsive-wrap approach, plus the Add Item button
+   sized to align with the inputs. */
+.item-entry-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr)) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .header-fields,
+  .item-entry-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Add Item's form-group has no real label, so a hidden spacer label of the
+   same height keeps the button's top edge level with the row's inputs. */
+.spacer-label {
+  visibility: hidden;
+}
+
+.add-item-btn {
+  white-space: nowrap;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.required-mark {
+  color: #b91c1c;
+}
+
+.form-input {
+  padding: 9px 10px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fff;
+  width: 100%;
+}
+
+.form-input:focus {
+  border-color: #2563eb;
+}
+
+.form-input[readonly] {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.error-text {
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+.section-divider {
+  margin: 18px 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.section-title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Table scrolls horizontally on narrow screens instead of squeezing columns
+   or breaking the modal's own layout. */
+.items-table-wrapper {
+  margin-top: 16px;
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.items-table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.items-table th,
+.items-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #f0f1f3;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.items-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.items-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.col-center {
+  text-align: center;
+}
+
+.col-right {
+  text-align: right;
+}
+
+.empty-row {
+  text-align: center;
+  color: #9ca3af;
+  padding: 16px 10px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #eef2fb; /* light footer bar, matches the header bar */
+  border-radius: 0 0 10px 10px;
+  flex-wrap: wrap;
+}
+
+/* Buttons mirror .toolbar-btn / .toolbar-btn.primary from manageorders
+   component CSS - duplicated here since component styles don't cross
+   component boundaries under Angular's view encapsulation. */
+.toolbar-btn {
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.toolbar-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.toolbar-btn.primary {
+  color: #ffffff;
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.toolbar-btn.primary:hover {
+  background-color: #1d4ed8;
+}

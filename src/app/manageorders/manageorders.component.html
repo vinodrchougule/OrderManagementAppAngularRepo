@@ -76,5 +76,12 @@
         (gridReady)="onGridReady($event)"
       />
     </div>
+
+    <!-- Create New Order modal - shown only while createOrderModalOpen() is true -->
+    <app-create-order-modal
+      *ngIf="createOrderModalOpen()"
+      (closed)="onCreateOrderModalClosed()"
+      (saved)="onOrderSaved($event)"
+    ></app-create-order-modal>
   </main>
 </div>
