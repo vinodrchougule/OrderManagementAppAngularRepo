@@ -4,10 +4,12 @@ import { ICellRendererParams } from 'ag-grid-community';
 
 import { Order } from './order.model';
 
-/**
- * Renders the View action button inside the "Actions" column.
- * TODO: wire this up to real navigation once the order details view exists.
- */
+/** Extra params passed via colDef.cellRendererParams so this renderer can call back into the grid component. */
+interface OrderActionsParams extends ICellRendererParams<Order> {
+  onView?: (order: Order) => void;
+}
+
+/** Renders the View action button inside the "Actions" column. */
 @Component({
   selector: 'app-order-actions-cell-renderer',
   standalone: true,
@@ -51,18 +53,20 @@ import { Order } from './order.model';
 })
 export class OrderActionsCellRendererComponent implements ICellRendererAngularComp {
   private data!: Order;
+  private params!: OrderActionsParams;
 
-  agInit(params: ICellRendererParams<Order>): void {
+  agInit(params: OrderActionsParams): void {
+    this.params = params;
     this.data = params.data as Order;
   }
 
-  refresh(params: ICellRendererParams<Order>): boolean {
+  refresh(params: OrderActionsParams): boolean {
+    this.params = params;
     this.data = params.data as Order;
     return true;
   }
 
   onView(): void {
-    // TODO: navigate to order details once that view exists.
-    console.log('View order', this.data.orderId);
+    this.params.onView?.(this.data); // delegate to ManageOrdersComponent.onViewOrder() via cellRendererParams
   }
 }

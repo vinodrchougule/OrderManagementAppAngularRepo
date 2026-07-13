@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output, computed, signal } from '@angular/core'; // OnDestroy added for drag-listener cleanup
+import { Component, EventEmitter, Output, computed, signal } from '@angular/core'; // OnDestroy no longer needed - drag moved to DraggableModalDirective
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -7,10 +7,11 @@ import {
   CustomerOption,
   ITEM_OPTIONS,
   ItemOption,
-  NewOrderPayload,
-  OrderLineItem
+  NewOrderPayload
 } from '../create-order.model';
+import { OrderLineItem } from '../order.model'; // moved to order.model.ts so View Order can reuse it
 import { formatOrderDate, todayIsoDate } from '../order-date.util';
+import { DraggableModalDirective } from '../../shared/draggable-modal.directive'; // shared, reusable drag behaviour
 
 /**
  * "Create New Order" modal. Header fields (Order Date, Customer, Total Amount)
@@ -20,19 +21,13 @@ import { formatOrderDate, todayIsoDate } from '../order-date.util';
 @Component({
   selector: 'app-create-order-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, DraggableModalDirective],
   templateUrl: './create-order-modal.component.html',
   styleUrls: ['./create-order-modal.component.css']
 })
-export class CreateOrderModalComponent implements OnDestroy {
+export class CreateOrderModalComponent {
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<NewOrderPayload>();
-
-  // Draggable modal-card offset (translate x/y in px from its centered rest position).
-  dragOffset = signal({ x: 0, y: 0 });
-  private isDragging = false;
-  private dragStart = { x: 0, y: 0 };
-  private offsetStart = { x: 0, y: 0 };
 
   customerOptions: CustomerOption[] = CUSTOMER_OPTIONS;
   itemOptions: ItemOption[] = ITEM_OPTIONS;
@@ -126,41 +121,5 @@ export class CreateOrderModalComponent implements OnDestroy {
 
   onCancel(): void {
     this.closed.emit();
-  }
-
-  // Starts a drag when the header bar (not the close button) is pressed.
-  onHeaderMouseDown(event: MouseEvent): void {
-    if ((event.target as HTMLElement).closest('.icon-close-btn')) {
-      return; // don't start a drag when clicking the X button
-    }
-    this.isDragging = true;
-    this.dragStart = { x: event.clientX, y: event.clientY };
-    this.offsetStart = { ...this.dragOffset() };
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
-    event.preventDefault(); // avoid text selection while dragging
-  }
-
-  // Arrow-function class fields so `this` and the listener reference stay stable
-  // for addEventListener/removeEventListener.
-  private onMouseMove = (event: MouseEvent): void => {
-    if (!this.isDragging) {
-      return;
-    }
-    const dx = event.clientX - this.dragStart.x;
-    const dy = event.clientY - this.dragStart.y;
-    this.dragOffset.set({ x: this.offsetStart.x + dx, y: this.offsetStart.y + dy }); // signal write - triggers re-render in this zoneless app
-  };
-
-  private onMouseUp = (): void => {
-    this.isDragging = false;
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
-  };
-
-  ngOnDestroy(): void {
-    // safety net in case the modal is destroyed mid-drag
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
   }
 }

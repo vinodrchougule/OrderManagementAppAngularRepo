@@ -1,10 +1,6 @@
 <div class="modal-backdrop" (click)="onCancel()">
-  <div
-    class="modal-card"
-    [style.transform]="'translate(' + dragOffset().x + 'px, ' + dragOffset().y + 'px)'"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="modal-header" (mousedown)="onHeaderMouseDown($event)">
+  <div class="modal-card" appDraggableModal (click)="$event.stopPropagation()">
+    <div class="modal-header">
       <h3>Create New Order</h3>
       <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()">✕</button>
     </div>

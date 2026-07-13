@@ -83,5 +83,14 @@
       (closed)="onCreateOrderModalClosed()"
       (saved)="onOrderSaved($event)"
     ></app-create-order-modal>
+
+    <!-- View Order modal - shown only while viewOrderModalOpen() is true and an order is selected -->
+    <app-view-order-modal
+      *ngIf="viewOrderModalOpen() && selectedOrder() as order"
+      [order]="order"
+      (closed)="onViewOrderModalClosed()"
+      (editOrder)="onEditOrderFromView($event)"
+      (deleteOrder)="onDeleteOrderFromView($event)"
+    ></app-view-order-modal>
   </main>
 </div>

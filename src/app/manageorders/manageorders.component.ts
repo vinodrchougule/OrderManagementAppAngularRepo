@@ -16,21 +16,15 @@ import { AppHeaderComponent } from '../shared/app-header.component';
 import { Order, OrderStatus } from './order.model';
 import { MOCK_ORDERS } from './manageorders.mock-data';
 import { OrderActionsCellRendererComponent } from './order-actions-cell-renderer.component';
-import { CreateOrderModalComponent } from './create-order-modal/create-order-modal.component'; // new Create New Order modal
-import { NewOrderPayload } from './create-order.model'; // new modal's save payload type
-import { formatOrderDate } from './order-date.util'; // moved out of this file so the modal can reuse it
+import { CreateOrderModalComponent } from './create-order-modal/create-order-modal.component'; // Create New Order modal
+import { ViewOrderModalComponent } from './view-order-modal/view-order-modal.component'; // new View Order modal
+import { NewOrderPayload } from './create-order.model'; // Create modal's save payload type
+import { formatOrderDate } from './order-date.util'; // moved out of this file so the modals can reuse it
+import { STATUS_COLORS } from './status-colors.util'; // moved out of this file so the View modal can reuse it
 
 // Registers every free Community feature (sorting, filtering, pagination,
 // column moving/resizing, row virtualisation, cell renderers, etc.).
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  Pending: '#b45309',
-  Processing: '#1d4ed8',
-  Shipped: '#6d28d9',
-  Delivered: '#15803d',
-  Cancelled: '#b91c1c'
-};
 
 interface ToggleableColumn {
   colId: string;
@@ -41,7 +35,7 @@ interface ToggleableColumn {
 @Component({
   selector: 'app-manage-orders',
   standalone: true,
-  imports: [CommonModule, AppHeaderComponent, AgGridAngular, CreateOrderModalComponent], // registers the new modal
+  imports: [CommonModule, AppHeaderComponent, AgGridAngular, CreateOrderModalComponent, ViewOrderModalComponent], // registers both modals
   templateUrl: './manageorders.component.html',
   styleUrls: ['./manageorders.component.css']
 })
@@ -53,6 +47,8 @@ export class ManageOrdersComponent {
   columnsMenuOpen = signal(false);
   filterRowVisible = signal(false); // controls the per-column floating filter row
   createOrderModalOpen = signal(false); // controls the Create New Order modal's visibility
+  viewOrderModalOpen = signal(false); // controls the View Order modal's visibility
+  selectedOrder = signal<Order | null>(null); // order currently shown in the View Order modal
 
   toggleableColumns = signal<ToggleableColumn[]>([
     { colId: 'orderId', label: 'Order Id', visible: true },
@@ -191,7 +187,8 @@ export class ManageOrdersComponent {
         pinned: 'right',
         headerClass: ['header-center', 'actions-col-bg'], // light tint that complements the header/footer colour
         cellClass: ['cell-center', 'actions-col-bg'],
-        cellRenderer: OrderActionsCellRendererComponent
+        cellRenderer: OrderActionsCellRendererComponent,
+        cellRendererParams: { onView: (order: Order) => this.onViewOrder(order) } // callback the renderer invokes on click
       }
     ];
   }
@@ -218,6 +215,29 @@ export class ManageOrdersComponent {
     };
     this.rowData = [newOrder, ...this.rowData]; // prepend so the new order appears first
     this.createOrderModalOpen.set(false); // close the modal (signal write also guarantees the grid re-renders)
+  }
+
+  onViewOrder(order: Order): void {
+    this.selectedOrder.set(order); // record which order to display
+    this.viewOrderModalOpen.set(true); // open the View Order modal
+  }
+
+  onViewOrderModalClosed(): void {
+    this.viewOrderModalOpen.set(false);
+    this.selectedOrder.set(null);
+  }
+
+  onEditOrderFromView(order: Order): void {
+    // TODO: open an edit form/modal once that flow is designed.
+    console.log('Edit order', order.orderId);
+  }
+
+  onDeleteOrderFromView(order: Order): void {
+    // TODO: replace with a real DELETE call to the Orders API once it's available;
+    // for now, remove the row locally so the action is visibly demonstrated.
+    this.rowData = this.rowData.filter((o) => o.orderId !== order.orderId);
+    this.viewOrderModalOpen.set(false); // close the modal (signal write also guarantees the grid re-renders)
+    this.selectedOrder.set(null);
   }
 
   onQuickFilterInput(value: string): void {

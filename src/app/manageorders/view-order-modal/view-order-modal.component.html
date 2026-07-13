@@ -1,0 +1,80 @@
+<div class="modal-backdrop" (click)="onClose()">
+  <div class="modal-card" appDraggableModal (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>View Order</h3>
+      <button type="button" class="icon-close-btn" title="Close" (click)="onClose()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Read-only order summary fields -->
+      <div class="header-fields">
+        <div class="form-group">
+          <label>Order Id</label>
+          <input type="text" class="form-input" [value]="order.orderId" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Order Date</label>
+          <input type="text" class="form-input" [value]="formatOrderDate(order.orderDate)" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Customer Name</label>
+          <input type="text" class="form-input" [value]="order.customerName" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Total Amount</label>
+          <input type="text" class="form-input" [value]="order.totalAmount.toFixed(2)" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <div class="status-field">
+            <span
+              class="status-badge"
+              [style.color]="statusColors[order.status]"
+              [style.background-color]="statusColors[order.status] + '1a'"
+            >{{ order.status }}</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- Item Details grid -->
+      <h4 class="section-title">Item Details</h4>
+      <div class="items-table-wrapper">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th class="col-center">Item Id</th>
+              <th>Item Name</th>
+              <th class="col-center">Quantity</th>
+              <th class="col-right">Unit Price</th>
+              <th class="col-right">Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of order.items">
+              <td class="col-center">{{ item.itemId }}</td>
+              <td>{{ item.itemName }}</td>
+              <td class="col-center">{{ item.quantity }}</td>
+              <td class="col-right">{{ item.unitPrice.toFixed(2) }}</td>
+              <td class="col-right">{{ item.lineTotal.toFixed(2) }}</td>
+            </tr>
+            <tr *ngIf="!order.items || order.items.length === 0">
+              <td class="empty-row" colspan="5">No item details available.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="toolbar-btn primary" (click)="onEdit()">Edit Order</button>
+      <button type="button" class="toolbar-btn danger" (click)="onDelete()">Delete Order</button>
+      <button type="button" class="toolbar-btn" (click)="onClose()">Close</button>
+    </div>
+  </div>
+</div>
