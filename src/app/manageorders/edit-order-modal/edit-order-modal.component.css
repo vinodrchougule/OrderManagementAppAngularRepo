@@ -32,7 +32,7 @@
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
-  background-color: #eef2fb; /* same light header bar as Create New Order modal */
+  background-color: #eef2fb; /* same light header colour as View Order */
   border-radius: 10px 10px 0 0;
   cursor: move;
   user-select: none;
@@ -65,16 +65,38 @@
   color: #1f2937;
 }
 
+.icon-close-btn.small {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  border: 1px solid #d1d5db;
+}
+
 .modal-body {
   padding: 18px 20px;
 }
 
-/* Read-only summary fields: auto-fit wraps naturally to fewer columns as the
+/* Header fields row: auto-fit wraps naturally to fewer columns as the
    viewport narrows, without a hard-coded column count/breakpoint. */
 .header-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
+}
+
+/* Add-item row: 3 fields + button, wraps to a single column on narrow screens. */
+.item-entry-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr)) auto;
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .item-entry-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-group {
@@ -83,10 +105,24 @@
   gap: 5px;
 }
 
+/* Add Item's form-group has no real label, so a hidden spacer label of the
+   same height keeps the button's top edge level with the row's inputs. */
+.spacer-label {
+  visibility: hidden;
+}
+
+.add-item-btn {
+  white-space: nowrap;
+}
+
 label {
   font-size: 12px;
   font-weight: 600;
   color: #374151;
+}
+
+.required-mark {
+  color: #b91c1c;
 }
 
 .form-input {
@@ -95,15 +131,63 @@ label {
   border: 1px solid #d1d5db;
   border-radius: 6px;
   outline: none;
-  background-color: #f3f4f6; /* every field here is read-only */
-  color: #4b5563;
+  background-color: #fff;
   width: 100%;
 }
 
-.status-field {
+.form-input:focus {
+  border-color: #2563eb;
+}
+
+.form-input[readonly] {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.error-text {
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+/* Order Date: formatted dd-Mon-yyyy text on top, with a fully-transparent
+   native <input type="date"> stacked behind it purely to host the calendar
+   picker (opened via showPicker()/click() from openDatePicker()). */
+.date-field {
+  position: relative;
   display: flex;
   align-items: center;
-  min-height: 37px; /* matches .form-input's rendered height so the row stays aligned */
+}
+
+.date-display {
+  cursor: pointer;
+  padding-right: 32px; /* room for the calendar icon */
+}
+
+.date-native-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: none;
+  padding: 0;
+  pointer-events: none; /* clicks go to .date-display / .calendar-btn, which call openDatePicker() */
+}
+
+.calendar-btn {
+  position: absolute;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
 .section-divider {
@@ -129,7 +213,7 @@ label {
 
 .items-table {
   width: 100%;
-  min-width: 420px;
+  min-width: 520px;
   border-collapse: collapse;
   font-size: 13px;
 }
@@ -172,7 +256,7 @@ label {
   gap: 10px;
   padding: 14px 20px;
   border-top: 1px solid #e5e7eb;
-  background-color: #eef2fb; /* same light footer bar as Create New Order modal */
+  background-color: #eef2fb; /* same light footer colour as View Order, matches the header bar above */
   border-radius: 0 0 10px 10px;
   flex-wrap: wrap;
 }
@@ -203,48 +287,4 @@ label {
 
 .toolbar-btn.primary:hover {
   background-color: #1d4ed8;
-}
-
-.toolbar-btn.danger {
-  color: #ffffff;
-  background-color: #dc2626;
-  border-color: #dc2626;
-}
-
-.toolbar-btn.danger:hover {
-  background-color: #b91c1c;
-}
-
-/* Delete confirmation dialog - sits above the View Order modal itself. */
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(17, 24, 39, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  z-index: 1100; /* above the View Order modal's own backdrop (1000) */
-}
-
-.confirm-box {
-  width: 100%;
-  max-width: 360px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-  padding: 20px;
-}
-
-.confirm-message {
-  margin: 0 0 18px;
-  font-size: 14px;
-  color: #1f2937;
-  text-align: center;
-}
-
-.confirm-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
 }

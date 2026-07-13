@@ -1,0 +1,144 @@
+<div class="modal-backdrop" (click)="onCancel()">
+  <div class="modal-card" appDraggableModal (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Edit Order</h3>
+      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="editForm" class="header-fields">
+        <div class="form-group">
+          <label>Order Id</label>
+          <input type="text" class="form-input" [value]="order.orderId" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Order Date <span class="required-mark">*</span></label>
+          <div class="date-field">
+            <!-- Shows dd-Mon-yyyy; clicking it (or the icon) opens the native calendar below -->
+            <input
+              type="text"
+              class="form-input date-display"
+              [value]="orderDateDisplay()"
+              readonly
+              (click)="openDatePicker()"
+            />
+            <!-- Hidden native date input - supplies the real ISO value + calendar picker UI -->
+            <input
+              #dateInput
+              type="date"
+              class="date-native-input"
+              [value]="orderDateIso()"
+              (change)="onOrderDateChange($any($event.target).value)"
+            />
+            <button type="button" class="calendar-btn" title="Choose date" (click)="openDatePicker()">📅</button>
+          </div>
+          <span class="error-text" *ngIf="submitted() && !orderDateIso()">
+            Order Date is required.
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Customer Name <span class="required-mark">*</span></label>
+          <select class="form-input" formControlName="customerId">
+            <option value="" disabled>Select customer</option>
+            <option *ngFor="let c of customerOptions" [value]="c.customerId">{{ c.customerName }}</option>
+          </select>
+          <span class="error-text" *ngIf="submitted() && f['customerId'].invalid">
+            Customer Name is required.
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Total Amount</label>
+          <input type="text" class="form-input" [value]="totalAmount().toFixed(2)" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Order Status</label>
+          <input type="text" class="form-input" [value]="order.status" readonly />
+        </div>
+      </form>
+
+      <hr class="section-divider" />
+
+      <h4 class="section-title">Order Items</h4>
+
+      <!-- Add-item row -->
+      <form [formGroup]="itemForm" class="item-entry-row">
+        <div class="form-group">
+          <label>Item Name <span class="required-mark">*</span></label>
+          <select class="form-input" formControlName="itemId">
+            <option value="" disabled>Select item</option>
+            <option *ngFor="let i of itemOptions" [value]="i.itemId">{{ i.itemName }}</option>
+          </select>
+          <span class="error-text" *ngIf="itemFormSubmitted() && itf['itemId'].invalid">
+            Item Name is required.
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Quantity <span class="required-mark">*</span></label>
+          <input type="number" class="form-input" formControlName="quantity" min="1" step="1" placeholder="0" />
+          <span class="error-text" *ngIf="itemFormSubmitted() && itf['quantity'].invalid">
+            Enter a whole number quantity (1 or more).
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Unit Price <span class="required-mark">*</span></label>
+          <input type="number" class="form-input" formControlName="unitPrice" min="0.01" step="0.01" placeholder="0.00" />
+          <span class="error-text" *ngIf="itemFormSubmitted() && itf['unitPrice'].invalid">
+            Enter a valid price (up to 2 decimal places).
+          </span>
+        </div>
+
+        <div class="form-group add-item-group">
+          <label class="spacer-label">&nbsp;</label>
+          <button type="button" class="toolbar-btn primary add-item-btn" (click)="onAddItem()">Add Item</button>
+        </div>
+      </form>
+
+      <div class="items-table-wrapper">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th class="col-center">Order Item Id</th>
+              <th class="col-center">Item Id</th>
+              <th>Item Name</th>
+              <th class="col-center">Quantity</th>
+              <th class="col-right">Unit Price</th>
+              <th class="col-right">Line Total</th>
+              <th class="col-center">Remove</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of items(); let i = index">
+              <td class="col-center">{{ item.orderItemId ?? '—' }}</td>
+              <td class="col-center">{{ item.itemId }}</td>
+              <td>{{ item.itemName }}</td>
+              <td class="col-center">{{ item.quantity }}</td>
+              <td class="col-right">{{ item.unitPrice.toFixed(2) }}</td>
+              <td class="col-right">{{ item.lineTotal.toFixed(2) }}</td>
+              <td class="col-center">
+                <button type="button" class="icon-close-btn small" title="Remove" (click)="onRemoveItem(i)">✕</button>
+              </td>
+            </tr>
+            <tr *ngIf="items().length === 0">
+              <td class="empty-row" colspan="7">No items on this order.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <span class="error-text" *ngIf="submitted() && items().length === 0">
+        Add at least one item to the order.
+      </span>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="toolbar-btn primary" (click)="onSave()">Save Changes</button>
+      <button type="button" class="toolbar-btn" (click)="onCancel()">Cancel</button>
+    </div>
+  </div>
+</div>

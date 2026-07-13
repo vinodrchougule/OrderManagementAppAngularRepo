@@ -73,8 +73,20 @@
 
     <div class="modal-footer">
       <button type="button" class="toolbar-btn primary" (click)="onEdit()">Edit Order</button>
-      <button type="button" class="toolbar-btn danger" (click)="onDelete()">Delete Order</button>
+      <button type="button" class="toolbar-btn danger" (click)="onDeleteClick()">Delete Order</button>
       <button type="button" class="toolbar-btn" (click)="onClose()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation - a separate top-level overlay (sibling of modal-backdrop,
+     not nested inside modal-card) so it isn't affected by the card's drag transform/overflow. -->
+<div class="confirm-overlay" *ngIf="confirmDeleteOpen()" (click)="onConfirmDeleteNo()">
+  <div class="confirm-box" (click)="$event.stopPropagation()">
+    <p class="confirm-message">Are you sure, to delete this Order?</p>
+    <div class="confirm-actions">
+      <button type="button" class="toolbar-btn danger" (click)="onConfirmDeleteYes()">Yes</button>
+      <button type="button" class="toolbar-btn" (click)="onConfirmDeleteNo()">No</button>
     </div>
   </div>
 </div>

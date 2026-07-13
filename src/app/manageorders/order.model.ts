@@ -3,6 +3,7 @@ export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | '
 // Moved here (from create-order.model.ts) so both the Create and View order
 // modals can share the same line-item shape.
 export interface OrderLineItem {
+  orderItemId?: number; // persisted row id (Edit Order modal's read-only "OrderItemId" column); absent for not-yet-saved items
   itemId: number;
   itemName: string;
   quantity: number;

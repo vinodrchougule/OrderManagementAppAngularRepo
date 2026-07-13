@@ -17,8 +17,10 @@ import { Order, OrderStatus } from './order.model';
 import { MOCK_ORDERS } from './manageorders.mock-data';
 import { OrderActionsCellRendererComponent } from './order-actions-cell-renderer.component';
 import { CreateOrderModalComponent } from './create-order-modal/create-order-modal.component'; // Create New Order modal
-import { ViewOrderModalComponent } from './view-order-modal/view-order-modal.component'; // new View Order modal
+import { ViewOrderModalComponent } from './view-order-modal/view-order-modal.component'; // View Order modal
+import { EditOrderModalComponent } from './edit-order-modal/edit-order-modal.component'; // new Edit Order modal
 import { NewOrderPayload } from './create-order.model'; // Create modal's save payload type
+import { EditOrderPayload } from './edit-order.model'; // Edit modal's save payload type
 import { formatOrderDate } from './order-date.util'; // moved out of this file so the modals can reuse it
 import { STATUS_COLORS } from './status-colors.util'; // moved out of this file so the View modal can reuse it
 
@@ -35,7 +37,7 @@ interface ToggleableColumn {
 @Component({
   selector: 'app-manage-orders',
   standalone: true,
-  imports: [CommonModule, AppHeaderComponent, AgGridAngular, CreateOrderModalComponent, ViewOrderModalComponent], // registers both modals
+  imports: [CommonModule, AppHeaderComponent, AgGridAngular, CreateOrderModalComponent, ViewOrderModalComponent, EditOrderModalComponent], // registers all 3 modals
   templateUrl: './manageorders.component.html',
   styleUrls: ['./manageorders.component.css']
 })
@@ -48,7 +50,8 @@ export class ManageOrdersComponent {
   filterRowVisible = signal(false); // controls the per-column floating filter row
   createOrderModalOpen = signal(false); // controls the Create New Order modal's visibility
   viewOrderModalOpen = signal(false); // controls the View Order modal's visibility
-  selectedOrder = signal<Order | null>(null); // order currently shown in the View Order modal
+  editOrderModalOpen = signal(false); // controls the Edit Order modal's visibility
+  selectedOrder = signal<Order | null>(null); // order currently shown in the View/Edit Order modal
 
   toggleableColumns = signal<ToggleableColumn[]>([
     { colId: 'orderId', label: 'Order Id', visible: true },
@@ -228,8 +231,32 @@ export class ManageOrdersComponent {
   }
 
   onEditOrderFromView(order: Order): void {
-    // TODO: open an edit form/modal once that flow is designed.
-    console.log('Edit order', order.orderId);
+    this.viewOrderModalOpen.set(false); // hide View Order
+    this.selectedOrder.set(order); // keep the order for Edit Order to read
+    this.editOrderModalOpen.set(true); // show Edit Order
+  }
+
+  onEditOrderModalClosed(): void {
+    this.editOrderModalOpen.set(false); // Cancel/X/backdrop click - discard and close
+    this.selectedOrder.set(null);
+  }
+
+  onOrderEdited(payload: EditOrderPayload): void {
+    // TODO: replace with a real PUT/PATCH call to the Orders API once it's available.
+    this.rowData = this.rowData.map((o) =>
+      o.orderId === payload.orderId
+        ? {
+            ...o,
+            orderDate: payload.orderDate,
+            customerId: payload.customerId,
+            customerName: payload.customerName,
+            totalAmount: payload.totalAmount,
+            items: payload.items
+          }
+        : o
+    );
+    this.editOrderModalOpen.set(false); // close the modal (signal write also guarantees the grid re-renders)
+    this.selectedOrder.set(null);
   }
 
   onDeleteOrderFromView(order: Order): void {
