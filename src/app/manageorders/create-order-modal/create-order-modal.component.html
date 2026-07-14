@@ -102,11 +102,16 @@
       <span class="error-text" *ngIf="headerSubmitted() && lineItems().length === 0">
         Add at least one item to the order.
       </span>
+
+      <span class="error-text" *ngIf="saveError()">{{ saveError() }}</span>
+      <span class="success-text" *ngIf="saveSuccessMessage()">{{ saveSuccessMessage() }}</span>
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="toolbar-btn primary" (click)="onSave()">Save Order</button>
-      <button type="button" class="toolbar-btn" (click)="onCancel()">Cancel</button>
+      <button type="button" class="toolbar-btn primary" [disabled]="saving()" (click)="onSave()">
+        {{ saving() ? 'Saving...' : 'Save Order' }}
+      </button>
+      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">Cancel</button>
     </div>
   </div>
 </div>

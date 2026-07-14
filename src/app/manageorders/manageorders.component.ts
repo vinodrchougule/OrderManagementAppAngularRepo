@@ -14,7 +14,6 @@ import * as XLSX from 'xlsx';
 
 import { AppHeaderComponent } from '../shared/app-header.component';
 import { Order, OrderStatus } from './order.model';
-import { MOCK_ORDERS } from './manageorders.mock-data';
 import { OrderActionsCellRendererComponent } from './order-actions-cell-renderer.component';
 import { CreateOrderModalComponent } from './create-order-modal/create-order-modal.component'; // Create New Order modal
 import { ViewOrderModalComponent } from './view-order-modal/view-order-modal.component'; // View Order modal
@@ -42,7 +41,7 @@ interface ToggleableColumn {
   styleUrls: ['./manageorders.component.css']
 })
 export class ManageOrdersComponent {
-  rowData: Order[] = [...MOCK_ORDERS];
+  rowData: Order[] = [];
 
   loading = signal(false);
   quickFilterText = signal('');
@@ -295,7 +294,7 @@ export class ManageOrdersComponent {
     // (set loading.set(true) before the call, loading.set(false) in next/error,
     // same pattern used in AuthService-backed components elsewhere in this app).
     setTimeout(() => {
-      this.rowData = [...MOCK_ORDERS];
+      this.rowData = [];
       this.loading.set(false);
     }, 700);
   }

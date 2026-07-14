@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output, computed, signal } from '@angular/core'; // OnDestroy no longer needed - drag moved to DraggableModalDirective
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import {
   CUSTOMER_OPTIONS,
@@ -12,6 +13,7 @@ import {
 import { OrderLineItem } from '../order.model'; // moved to order.model.ts so View Order can reuse it
 import { formatOrderDate, todayIsoDate } from '../order-date.util';
 import { DraggableModalDirective } from '../../shared/draggable-modal.directive'; // shared, reusable drag behaviour
+import { OrderService } from '../../services/order.service';
 
 /**
  * "Create New Order" modal. Header fields (Order Date, Customer, Total Amount)
@@ -43,11 +45,15 @@ export class CreateOrderModalComponent {
   itemFormSubmitted = signal(false); // gates item-row validation messages until first Add Item attempt
   headerSubmitted = signal(false); // gates header validation + "add at least one item" message until Save attempt
 
+  saving = signal(false); // true while the create-order API call is in flight (and the brief success pause after)
+  saveError = signal<string | null>(null); // set when the API call fails
+  saveSuccessMessage = signal<string | null>(null); // plain-text response body shown after a successful save
+
   totalAmount = computed(() =>
     this.lineItems().reduce((sum, item) => sum + item.lineTotal, 0)
   );
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private orderService: OrderService) {
     this.headerForm = this.fb.group({
       customerId: ['', Validators.required]
     });
@@ -109,17 +115,55 @@ export class CreateOrderModalComponent {
     }
 
     const customerId = Number(this.headerForm.value.customerId);
+    const items = this.lineItems();
 
-    this.saved.emit({
-      orderDate: this.todayIso,
-      customerId,
-      customerName: this.customerName(customerId),
-      totalAmount: this.totalAmount(),
-      items: this.lineItems()
-    });
+    this.saveError.set(null);
+    this.saveSuccessMessage.set(null);
+    this.saving.set(true);
+
+    this.orderService
+      .createOrder({
+        customerId,
+        orderItems: items.map((item) => ({
+          itemId: item.itemId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice
+        }))
+      })
+      .subscribe({
+        next: (response) => {
+          this.saveSuccessMessage.set(response); // show the API's plain-text response before closing
+
+          setTimeout(() => {
+            this.saving.set(false);
+            this.saved.emit({
+              orderDate: this.todayIso,
+              customerId,
+              customerName: this.customerName(customerId),
+              totalAmount: this.totalAmount(),
+              items
+            });
+          }, 900);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.saving.set(false);
+          this.saveError.set(this.extractErrorMessage(err));
+        }
+      });
   }
 
   onCancel(): void {
     this.closed.emit();
+  }
+
+  // createOrder() uses responseType: 'text', so err.error holds the API's raw
+  // response body (its actual error text) on failure - fall back to err.message
+  // only for network-level failures (e.g. CORS, connection refused) that never
+  // reached the server and so have no response body.
+  private extractErrorMessage(err: HttpErrorResponse): string {
+    if (typeof err.error === 'string' && err.error.trim().length > 0) {
+      return err.error;
+    }
+    return err.message || 'Failed to save order. Please try again.';
   }
 }
