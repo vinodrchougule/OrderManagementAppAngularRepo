@@ -75,16 +75,6 @@
   gap: 6px;
 }
 
-.toolbar-btn.active {
-  color: #2563eb;
-  background-color: #eff6ff;
-  border-color: #2563eb;
-}
-
-.funnel-icon {
-  flex-shrink: 0;
-}
-
 .plus-icon {
   flex-shrink: 0;
 }

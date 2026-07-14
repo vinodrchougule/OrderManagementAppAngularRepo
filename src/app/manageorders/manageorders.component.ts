@@ -7,9 +7,14 @@ import {
   GridApi,
   GridReadyEvent,
   ICellRendererParams,
+  IDatasource,
+  IGetRowsParams,
   ModuleRegistry,
+  PaginationChangedEvent,
+  SortModelItem,
   themeQuartz
 } from 'ag-grid-community';
+import { forkJoin } from 'rxjs';
 import * as XLSX from 'xlsx';
 
 import { AppHeaderComponent } from '../shared/app-header.component';
@@ -22,9 +27,11 @@ import { NewOrderPayload } from './create-order.model'; // Create modal's save p
 import { EditOrderPayload } from './edit-order.model'; // Edit modal's save payload type
 import { formatOrderDate } from './order-date.util'; // moved out of this file so the modals can reuse it
 import { STATUS_COLORS } from './status-colors.util'; // moved out of this file so the View modal can reuse it
+import { OrderService } from '../services/order.service';
 
 // Registers every free Community feature (sorting, filtering, pagination,
-// column moving/resizing, row virtualisation, cell renderers, etc.).
+// column moving/resizing, row virtualisation, cell renderers, the infinite
+// row model, etc.).
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface ToggleableColumn {
@@ -32,6 +39,13 @@ interface ToggleableColumn {
   label: string;
   visible: boolean;
 }
+
+// GET /api/Order only accepts PageNo/PageSize - there's no server-side sort
+// or search support. The grid is wired to the Infinite Row Model so
+// pagination genuinely hits the API for every page, and this component fakes
+// sort/quick-filter by applying them to whatever page just came back from the
+// API.
+const ROW_MODEL_PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-manage-orders',
@@ -41,12 +55,9 @@ interface ToggleableColumn {
   styleUrls: ['./manageorders.component.css']
 })
 export class ManageOrdersComponent {
-  rowData: Order[] = [];
-
   loading = signal(false);
   quickFilterText = signal('');
   columnsMenuOpen = signal(false);
-  filterRowVisible = signal(false); // controls the per-column floating filter row
   createOrderModalOpen = signal(false); // controls the Create New Order modal's visibility
   viewOrderModalOpen = signal(false); // controls the View Order modal's visibility
   editOrderModalOpen = signal(false); // controls the Edit Order modal's visibility
@@ -72,39 +83,106 @@ export class ManageOrdersComponent {
 
   defaultColDef: ColDef = {
     sortable: true,
-    filter: true,
+    filter: false,
     resizable: true,
     minWidth: 110
-    // floatingFilter is NOT set here - it's applied per-column in buildColumnDefs()
-    // below, driven by filterRowVisible(), so the row can be toggled on/off.
   };
 
-  // Built as a method (not a static array) so it can be regenerated with an
-  // updated floatingFilter value whenever the Filter button is toggled.
   columnDefs: ColDef<Order>[] = this.buildColumnDefs();
 
+  // Infinite Row Model - the grid calls datasource.getRows() itself on first
+  // render and every time the visible page changes, which is what actually
+  // drives the GET /api/Order call on load + on every page change.
+  rowModelType: 'infinite' = 'infinite';
+  paginationPageSize = ROW_MODEL_PAGE_SIZE;
+  cacheBlockSize = ROW_MODEL_PAGE_SIZE; // must match paginationPageSize so one block == one page
+  datasource: IDatasource = this.buildDatasource();
+
   private gridApi?: GridApi<Order>;
+
+  constructor(private orderService: OrderService) {}
 
   onGridReady(event: GridReadyEvent<Order>): void {
     this.gridApi = event.api;
   }
 
-  toggleFilterRow(): void {
-    this.filterRowVisible.update((visible) => !visible); // flip the toggle state
-    this.columnDefs = this.buildColumnDefs(); // rebuild colDefs with new floatingFilter value
-    this.gridApi?.setGridOption('columnDefs', this.columnDefs); // push the change into the live grid
+  // Keeps cacheBlockSize in sync when the user picks a different page size from
+  // the pagination panel's selector, so each visual page still maps to exactly
+  // one API call for exactly that many rows.
+  onPaginationChanged(event: PaginationChangedEvent<Order>): void {
+    if (!event.newPageSize || !this.gridApi) {
+      return;
+    }
+    const newSize = this.gridApi.paginationGetPageSize();
+    if (newSize && newSize !== this.cacheBlockSize) {
+      this.cacheBlockSize = newSize;
+      this.gridApi.setGridOption('cacheBlockSize', newSize);
+    }
+  }
+
+  private buildDatasource(): IDatasource {
+    return {
+      getRows: (params: IGetRowsParams<Order>) => {
+        const pageSize = params.endRow - params.startRow;
+        const pageNo = Math.floor(params.startRow / pageSize) + 1;
+
+        this.loading.set(true);
+        this.orderService.getOrders(pageNo, pageSize).subscribe({
+          next: (page) => {
+            this.loading.set(false);
+            let rows = this.applyQuickFilter(page.items, this.quickFilterText());
+            rows = this.applySortModel(rows, params.sortModel);
+            params.successCallback(rows, page.totalCount);
+          },
+          error: () => {
+            this.loading.set(false);
+            params.failCallback();
+          }
+        });
+      }
+    };
+  }
+
+  // Search box - the API has no search query param, so this filters whatever
+  // page the grid currently has loaded rather than the whole order list.
+  private applyQuickFilter(rows: Order[], text: string): Order[] {
+    const query = text.trim().toLowerCase();
+    if (!query) {
+      return rows;
+    }
+    return rows.filter((order) =>
+      [order.orderId, order.orderDate, order.customerId, order.customerName, order.totalAmount, order.status].some(
+        (value) => String(value).toLowerCase().includes(query)
+      )
+    );
+  }
+
+  // Column header sort - same caveat as search: sorts the current page only,
+  // since the API has no sort query param to apply it across the full list.
+  private applySortModel(rows: Order[], sortModel: SortModelItem[]): Order[] {
+    if (!sortModel.length) {
+      return rows;
+    }
+    return [...rows].sort((a, b) => {
+      for (const { colId, sort } of sortModel) {
+        const aValue = (a as unknown as Record<string, unknown>)[colId];
+        const bValue = (b as unknown as Record<string, unknown>)[colId];
+        if (aValue === bValue) {
+          continue;
+        }
+        const comparison = aValue! > bValue! ? 1 : -1;
+        return sort === 'asc' ? comparison : -comparison;
+      }
+      return 0;
+    });
   }
 
   private buildColumnDefs(): ColDef<Order>[] {
-    const floatingFilter = this.filterRowVisible(); // read current toggle state
-
     return [
       {
         colId: 'orderId',
         field: 'orderId',
         headerName: 'Order Id',
-        filter: 'agNumberColumnFilter',
-        floatingFilter,
         flex: 1,
         minWidth: 100,
         headerClass: 'header-center',
@@ -114,7 +192,6 @@ export class ManageOrdersComponent {
         colId: 'orderDate',
         field: 'orderDate',
         headerName: 'Order Date',
-        floatingFilter,
         flex: 1,
         minWidth: 110,
         headerClass: 'header-center',
@@ -125,8 +202,6 @@ export class ManageOrdersComponent {
         colId: 'customerId',
         field: 'customerId',
         headerName: 'Customer Id',
-        filter: 'agNumberColumnFilter',
-        floatingFilter,
         flex: 1,
         minWidth: 110,
         headerClass: 'header-center',
@@ -136,7 +211,6 @@ export class ManageOrdersComponent {
         colId: 'customerName',
         field: 'customerName',
         headerName: 'Customer Name',
-        floatingFilter,
         flex: 1.4,
         minWidth: 150,
         headerClass: 'header-left',
@@ -146,8 +220,6 @@ export class ManageOrdersComponent {
         colId: 'totalAmount',
         field: 'totalAmount',
         headerName: 'Total Amount',
-        filter: 'agNumberColumnFilter',
-        floatingFilter,
         type: 'rightAligned',
         flex: 1,
         minWidth: 130,
@@ -164,7 +236,6 @@ export class ManageOrdersComponent {
         colId: 'status',
         field: 'status',
         headerName: 'Status',
-        floatingFilter,
         flex: 1,
         minWidth: 110,
         headerClass: 'header-center',
@@ -184,7 +255,6 @@ export class ManageOrdersComponent {
         minWidth: 90,
         maxWidth: 90,
         sortable: false,
-        filter: false,
         resizable: false,
         pinned: 'right',
         headerClass: ['header-center', 'actions-col-bg'], // light tint that complements the header/footer colour
@@ -203,20 +273,12 @@ export class ManageOrdersComponent {
     this.createOrderModalOpen.set(false); // Cancel/X/backdrop click - discard and close
   }
 
-  onOrderSaved(payload: NewOrderPayload): void {
-    // TODO: replace with a real POST to the Orders API once it's available;
-    // for now, generate a local id and prepend the new row so it's visible immediately.
-    const newOrderId = this.rowData.reduce((max, o) => Math.max(max, o.orderId), 0) + 1;
-    const newOrder: Order = {
-      orderId: newOrderId,
-      orderDate: payload.orderDate,
-      customerId: payload.customerId,
-      customerName: payload.customerName,
-      totalAmount: payload.totalAmount,
-      status: 'Pending'
-    };
-    this.rowData = [newOrder, ...this.rowData]; // prepend so the new order appears first
-    this.createOrderModalOpen.set(false); // close the modal (signal write also guarantees the grid re-renders)
+  // create-order-modal has already POSTed the order to the API by the time it
+  // emits `saved` - just close the modal and re-pull the current page from the
+  // server so the grid reflects the real, saved state.
+  onOrderSaved(_payload: NewOrderPayload): void {
+    this.createOrderModalOpen.set(false);
+    this.gridApi?.refreshInfiniteCache();
   }
 
   onViewOrder(order: Order): void {
@@ -240,41 +302,31 @@ export class ManageOrdersComponent {
     this.selectedOrder.set(null);
   }
 
-  onOrderEdited(payload: EditOrderPayload): void {
-    // TODO: replace with a real PUT/PATCH call to the Orders API once it's available.
-    this.rowData = this.rowData.map((o) =>
-      o.orderId === payload.orderId
-        ? {
-            ...o,
-            orderDate: payload.orderDate,
-            customerId: payload.customerId,
-            customerName: payload.customerName,
-            totalAmount: payload.totalAmount,
-            items: payload.items
-          }
-        : o
-    );
-    this.editOrderModalOpen.set(false); // close the modal (signal write also guarantees the grid re-renders)
+  // NOTE: Edit Order has no real PUT call yet (only Create hits the API), so
+  // this refresh re-pulls the unchanged row from the server - the edit only
+  // "sticks" once EditOrderModalComponent is wired up to a real update call.
+  onOrderEdited(_payload: EditOrderPayload): void {
+    this.editOrderModalOpen.set(false);
     this.selectedOrder.set(null);
+    this.gridApi?.refreshInfiniteCache();
   }
 
-  onDeleteOrderFromView(order: Order): void {
-    // TODO: replace with a real DELETE call to the Orders API once it's available;
-    // for now, remove the row locally so the action is visibly demonstrated.
-    this.rowData = this.rowData.filter((o) => o.orderId !== order.orderId);
-    this.viewOrderModalOpen.set(false); // close the modal (signal write also guarantees the grid re-renders)
+  // NOTE: same caveat as onOrderEdited - there's no real DELETE call yet, so
+  // the row will still be there after this refresh until Delete is wired up.
+  onDeleteOrderFromView(_order: Order): void {
+    this.viewOrderModalOpen.set(false);
     this.selectedOrder.set(null);
+    this.gridApi?.refreshInfiniteCache();
   }
 
   onQuickFilterInput(value: string): void {
     this.quickFilterText.set(value);
-    this.gridApi?.setGridOption('quickFilterText', value);
+    this.gridApi?.refreshInfiniteCache(); // re-pull the current page and re-apply the quick filter to it
   }
 
   onClearSearch(): void {
     this.quickFilterText.set(''); // empty the search box
-    this.gridApi?.setGridOption('quickFilterText', ''); // drop the active quick filter so hidden rows reappear
-    this.onRefresh(); // reload the grid's row data
+    this.gridApi?.refreshInfiniteCache(); // drop the active quick filter so hidden rows reappear
   }
 
   toggleColumnsMenu(): void {
@@ -288,25 +340,36 @@ export class ManageOrdersComponent {
     this.gridApi?.setColumnsVisible([colId], visible);
   }
 
-  onRefresh(): void {
+  // Exports the full order list, not just the currently-loaded grid page -
+  // pages through the API (capped at the backend's max page size of 100)
+  // until every order has been fetched.
+  onExportExcel(): void {
     this.loading.set(true);
-    // TODO: replace with a real call to the Orders API once it's available
-    // (set loading.set(true) before the call, loading.set(false) in next/error,
-    // same pattern used in AuthService-backed components elsewhere in this app).
-    setTimeout(() => {
-      this.rowData = [];
-      this.loading.set(false);
-    }, 700);
+    const pageSize = 100;
+
+    this.orderService.getOrders(1, pageSize).subscribe({
+      next: (firstPage) => {
+        const totalPages = Math.max(1, Math.ceil(firstPage.totalCount / pageSize));
+        if (totalPages <= 1) {
+          this.writeExcel(firstPage.items);
+          return;
+        }
+
+        const remainingPageNos = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+        forkJoin(remainingPageNos.map((pageNo) => this.orderService.getOrders(pageNo, pageSize))).subscribe({
+          next: (remainingPages) => {
+            const allItems = [firstPage.items, ...remainingPages.map((p) => p.items)].flat();
+            this.writeExcel(allItems);
+          },
+          error: () => this.loading.set(false)
+        });
+      },
+      error: () => this.loading.set(false)
+    });
   }
 
-  onExportExcel(): void {
-    const rows: Order[] = [];
-    this.gridApi?.forEachNodeAfterFilterAndSort((node) => {
-      if (node.data) {
-        rows.push(node.data);
-      }
-    });
-
+  private writeExcel(rows: Order[]): void {
+    this.loading.set(false);
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');

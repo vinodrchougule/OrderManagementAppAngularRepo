@@ -40,20 +40,6 @@
           </div>
         </div>
 
-        <button
-          type="button"
-          class="toolbar-btn"
-          [class.active]="filterRowVisible()"
-          title="Toggle filter row"
-          (click)="toggleFilterRow()"
-        >
-          <svg class="funnel-icon" width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 4h18l-7 9v5l-4 2v-7L3 4z" fill="currentColor" />
-          </svg>
-          Filter
-        </button>
-
-        <button type="button" class="toolbar-btn" (click)="onRefresh()">Refresh</button>
         <button type="button" class="toolbar-btn primary" (click)="onExportExcel()">
           Export to Excel
         </button>
@@ -64,16 +50,19 @@
       <ag-grid-angular
         class="orders-grid"
         [theme]="theme"
-        [rowData]="rowData"
+        [rowModelType]="rowModelType"
+        [datasource]="datasource"
         [columnDefs]="columnDefs"
         [defaultColDef]="defaultColDef"
         [pagination]="true"
-        [paginationPageSize]="10"
+        [paginationPageSize]="paginationPageSize"
+        [cacheBlockSize]="cacheBlockSize"
         [paginationPageSizeSelector]="[10, 25, 50]"
         [domLayout]="'autoHeight'"
         [loading]="loading()"
         [animateRows]="true"
         (gridReady)="onGridReady($event)"
+        (paginationChanged)="onPaginationChanged($event)"
       />
     </div>
 
