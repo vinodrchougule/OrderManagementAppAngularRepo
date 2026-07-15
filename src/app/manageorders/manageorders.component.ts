@@ -281,14 +281,29 @@ export class ManageOrdersComponent {
     this.gridApi?.refreshInfiniteCache();
   }
 
+  // Fetches the full order detail from GET /api/Order/{orderId} rather than reusing the
+  // grid row, so the View Order modal always reflects the latest server-side data.
   onViewOrder(order: Order): void {
-    this.selectedOrder.set(order); // record which order to display
-    this.viewOrderModalOpen.set(true); // open the View Order modal
+    this.loading.set(true);
+    this.orderService.getOrderById(order.orderId).subscribe({
+      next: (fullOrder) => {
+        this.loading.set(false);
+        this.selectedOrder.set(fullOrder);
+        this.viewOrderModalOpen.set(true);
+      },
+      error: () => {
+        this.loading.set(false);
+      }
+    });
   }
 
+  // Covers both a plain Close/X (no changes) and the view-order-modal's own
+  // auto-close after a successful delete - refreshing on every close is a
+  // no-op API call in the former case and the actual point of the latter.
   onViewOrderModalClosed(): void {
     this.viewOrderModalOpen.set(false);
     this.selectedOrder.set(null);
+    this.gridApi?.refreshInfiniteCache();
   }
 
   onEditOrderFromView(order: Order): void {
@@ -307,14 +322,6 @@ export class ManageOrdersComponent {
   // "sticks" once EditOrderModalComponent is wired up to a real update call.
   onOrderEdited(_payload: EditOrderPayload): void {
     this.editOrderModalOpen.set(false);
-    this.selectedOrder.set(null);
-    this.gridApi?.refreshInfiniteCache();
-  }
-
-  // NOTE: same caveat as onOrderEdited - there's no real DELETE call yet, so
-  // the row will still be there after this refresh until Delete is wired up.
-  onDeleteOrderFromView(_order: Order): void {
-    this.viewOrderModalOpen.set(false);
     this.selectedOrder.set(null);
     this.gridApi?.refreshInfiniteCache();
   }

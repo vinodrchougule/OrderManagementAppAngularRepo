@@ -18,5 +18,6 @@ export interface Order {
   customerName: string;
   totalAmount: number;
   status: OrderStatus;
+  rowVersion: string; // concurrency token, echoed back on updates
   items?: OrderLineItem[]; // line items shown in the View Order modal's Item Details grid
 }

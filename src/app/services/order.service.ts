@@ -24,6 +24,7 @@ interface OrderApiItem {
   customerName: string;
   totalAmount: number;
   status: OrderStatus;
+  rowVersion: string; // concurrency token, echoed back on updates
   orderItems: {
     orderItemId: number;
     itemId: number;
@@ -68,6 +69,17 @@ export class OrderService {
     return this.http.post(this.baseUrl, payload, { responseType: 'text' });
   }
 
+  // GET /api/Order/{orderId} - single order's full detail (incl. line items) for the View Order modal.
+  getOrderById(orderId: number): Observable<Order> {
+    return this.http.get<OrderApiItem>(`${this.baseUrl}/${orderId}`).pipe(map((item) => this.toOrder(item)));
+  }
+
+  // DELETE /api/Order/{orderId} - responseType 'text' for the same reason as createOrder:
+  // the API's response body isn't guaranteed to be JSON (may also be empty on 204).
+  deleteOrder(orderId: number): Observable<string> {
+    return this.http.delete(`${this.baseUrl}/${orderId}`, { responseType: 'text' });
+  }
+
   // GET /api/Order?PageNo=..&PageSize=.. - one page of orders plus paging metadata.
   getOrders(pageNo: number, pageSize: number): Observable<OrdersPage> {
     const params = new HttpParams().set('PageNo', pageNo).set('PageSize', pageSize);
@@ -93,6 +105,7 @@ export class OrderService {
       customerName: item.customerName,
       totalAmount: item.totalAmount,
       status: item.status,
+      rowVersion: item.rowVersion,
       items: item.orderItems.map(
         (oi): OrderLineItem => ({
           orderItemId: oi.orderItemId,
