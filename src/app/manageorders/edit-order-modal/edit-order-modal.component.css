@@ -149,6 +149,13 @@ label {
   color: #b91c1c;
 }
 
+.success-text {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #15803d;
+}
+
 /* Order Date: formatted dd-Mon-yyyy text on top, with a fully-transparent
    native <input type="date"> stacked behind it purely to host the calendar
    picker (opened via showPicker()/click() from openDatePicker()). */

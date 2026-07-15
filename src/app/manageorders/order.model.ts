@@ -1,4 +1,7 @@
-export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+// Order matters - it mirrors the backend OrderStatus enum's declaration order
+// (Pending=0, Confirmed=1, Shipped=2, Delivered=3, Cancelled=4), which the Edit
+// Order modal relies on to send the numeric value the update API expects.
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
 
 // Moved here (from create-order.model.ts) so both the Create and View order
 // modals can share the same line-item shape.

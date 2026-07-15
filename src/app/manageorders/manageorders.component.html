@@ -86,7 +86,6 @@
       *ngIf="editOrderModalOpen() && selectedOrder() as order"
       [order]="order"
       (closed)="onEditOrderModalClosed()"
-      (saved)="onOrderEdited($event)"
     ></app-edit-order-modal>
   </main>
 </div>

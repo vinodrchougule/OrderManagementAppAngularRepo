@@ -55,8 +55,14 @@
         </div>
 
         <div class="form-group">
-          <label>Order Status</label>
-          <input type="text" class="form-input" [value]="order.status" readonly />
+          <label>Order Status <span class="required-mark">*</span></label>
+          <select class="form-input" formControlName="status">
+            <option value="" disabled>Select status</option>
+            <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+          </select>
+          <span class="error-text" *ngIf="submitted() && f['status'].invalid">
+            Order Status is required.
+          </span>
         </div>
       </form>
 
@@ -134,11 +140,21 @@
       <span class="error-text" *ngIf="submitted() && items().length === 0">
         Add at least one item to the order.
       </span>
+
+      <span class="error-text" *ngIf="saveError()">{{ saveError() }}</span>
+      <span class="success-text" *ngIf="saveSuccessMessage()">{{ saveSuccessMessage() }}</span>
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="toolbar-btn primary" (click)="onSave()">Save Changes</button>
-      <button type="button" class="toolbar-btn" (click)="onCancel()">Cancel</button>
+      <ng-container *ngIf="!saveSuccessMessage(); else closeOnlyFooter">
+        <button type="button" class="toolbar-btn primary" [disabled]="saving()" (click)="onSave()">
+          {{ saving() ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">Cancel</button>
+      </ng-container>
+      <ng-template #closeOnlyFooter>
+        <button type="button" class="toolbar-btn primary" (click)="onCancel()">Close</button>
+      </ng-template>
     </div>
   </div>
 </div>

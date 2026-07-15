@@ -16,6 +16,22 @@ export interface CreateOrderRequest {
   orderItems: CreateOrderItemRequest[];
 }
 
+export interface UpdateOrderItemRequest {
+  orderItemId?: number; // omitted for a line item added during this edit (not yet persisted)
+  itemId: number;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface UpdateOrderRequest {
+  orderId: number; // must match the {orderId} route segment - the API rejects a mismatch
+  orderDate: string;
+  customerId: number;
+  status: number; // backend OrderStatus enum's numeric value - it rejects the string name (see STATUS_COLORS' key order)
+  rowVersion: string; // concurrency token from the order last fetched, echoed back so the API can detect conflicting edits
+  orderItems: UpdateOrderItemRequest[];
+}
+
 // Shape of each entry in GET /api/Order's "items" array (OrderResponse on the API side).
 interface OrderApiItem {
   orderId: number;
@@ -72,6 +88,12 @@ export class OrderService {
   // GET /api/Order/{orderId} - single order's full detail (incl. line items) for the View Order modal.
   getOrderById(orderId: number): Observable<Order> {
     return this.http.get<OrderApiItem>(`${this.baseUrl}/${orderId}`).pipe(map((item) => this.toOrder(item)));
+  }
+
+  // PUT /api/Order/{orderId} - persists the Edit Order modal's changes. Same
+  // responseType rationale as createOrder: the API's response body is plain text.
+  updateOrder(orderId: number, payload: UpdateOrderRequest): Observable<string> {
+    return this.http.put(`${this.baseUrl}/${orderId}`, payload, { responseType: 'text' });
   }
 
   // DELETE /api/Order/{orderId} - responseType 'text' for the same reason as createOrder:

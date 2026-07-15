@@ -24,7 +24,6 @@ import { CreateOrderModalComponent } from './create-order-modal/create-order-mod
 import { ViewOrderModalComponent } from './view-order-modal/view-order-modal.component'; // View Order modal
 import { EditOrderModalComponent } from './edit-order-modal/edit-order-modal.component'; // new Edit Order modal
 import { NewOrderPayload } from './create-order.model'; // Create modal's save payload type
-import { EditOrderPayload } from './edit-order.model'; // Edit modal's save payload type
 import { formatOrderDate } from './order-date.util'; // moved out of this file so the modals can reuse it
 import { STATUS_COLORS } from './status-colors.util'; // moved out of this file so the View modal can reuse it
 import { OrderService } from '../services/order.service';
@@ -306,21 +305,28 @@ export class ManageOrdersComponent {
     this.gridApi?.refreshInfiniteCache();
   }
 
+  // Re-fetches the order from GET /api/Order/{orderId} rather than reusing the
+  // copy View Order already has, so Edit Order always opens on the latest
+  // server-side data (e.g. rowVersion) even if it changed since View was opened.
   onEditOrderFromView(order: Order): void {
     this.viewOrderModalOpen.set(false); // hide View Order
-    this.selectedOrder.set(order); // keep the order for Edit Order to read
-    this.editOrderModalOpen.set(true); // show Edit Order
+    this.loading.set(true);
+    this.orderService.getOrderById(order.orderId).subscribe({
+      next: (fullOrder) => {
+        this.loading.set(false);
+        this.selectedOrder.set(fullOrder);
+        this.editOrderModalOpen.set(true); // show Edit Order
+      },
+      error: () => {
+        this.loading.set(false);
+      }
+    });
   }
 
+  // EditOrderModalComponent saves via its own PUT /api/Order/{orderId} call and
+  // shows a success message while staying open - the grid only needs refreshing
+  // once the modal actually closes (Cancel/X/backdrop, or Close after a save).
   onEditOrderModalClosed(): void {
-    this.editOrderModalOpen.set(false); // Cancel/X/backdrop click - discard and close
-    this.selectedOrder.set(null);
-  }
-
-  // NOTE: Edit Order has no real PUT call yet (only Create hits the API), so
-  // this refresh re-pulls the unchanged row from the server - the edit only
-  // "sticks" once EditOrderModalComponent is wired up to a real update call.
-  onOrderEdited(_payload: EditOrderPayload): void {
     this.editOrderModalOpen.set(false);
     this.selectedOrder.set(null);
     this.gridApi?.refreshInfiniteCache();
