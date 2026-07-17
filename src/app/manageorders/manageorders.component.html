@@ -28,7 +28,8 @@
           <button type="button" class="toolbar-btn" (click)="toggleColumnsMenu()">
             Columns
           </button>
-          <div class="columns-panel" *ngIf="columnsMenuOpen()">
+          @if (columnsMenuOpen()) {
+          <div class="columns-panel">
             <label *ngFor="let col of toggleableColumns()" class="columns-panel-item">
               <input
                 type="checkbox"
@@ -38,6 +39,7 @@
               {{ col.label }}
             </label>
           </div>
+        }
         </div>
 
         <button type="button" class="toolbar-btn primary" (click)="onExportExcel()">
