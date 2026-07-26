@@ -39,11 +39,11 @@ interface ToggleableColumn {
   visible: boolean;
 }
 
-// GET /api/Order only accepts PageNo/PageSize - there's no server-side sort
-// or search support. The grid is wired to the Infinite Row Model so
-// pagination genuinely hits the API for every page, and this component fakes
-// sort/quick-filter by applying them to whatever page just came back from the
-// API.
+// GET /api/Order and GET /api/Order/search accept PageNo/PageSize but neither
+// supports server-side sort. The grid is wired to the Infinite Row Model so
+// pagination (and search) genuinely hit the API for every page, and this
+// component fakes sort by applying it to whatever page just came back from
+// the API.
 const ROW_MODEL_PAGE_SIZE = 10;
 
 @Component({
@@ -124,13 +124,17 @@ export class ManageOrdersComponent {
       getRows: (params: IGetRowsParams<Order>) => {
         const pageSize = params.endRow - params.startRow;
         const pageNo = Math.floor(params.startRow / pageSize) + 1;
+        const searchText = this.quickFilterText().trim();
+
+        const request = searchText
+          ? this.orderService.searchOrders(searchText, pageNo, pageSize)
+          : this.orderService.getOrders(pageNo, pageSize);
 
         this.loading.set(true);
-        this.orderService.getOrders(pageNo, pageSize).subscribe({
+        request.subscribe({
           next: (page) => {
             this.loading.set(false);
-            let rows = this.applyQuickFilter(page.items, this.quickFilterText());
-            rows = this.applySortModel(rows, params.sortModel);
+            const rows = this.applySortModel(page.items, params.sortModel);
             params.successCallback(rows, page.totalCount);
           },
           error: () => {
@@ -140,20 +144,6 @@ export class ManageOrdersComponent {
         });
       }
     };
-  }
-
-  // Search box - the API has no search query param, so this filters whatever
-  // page the grid currently has loaded rather than the whole order list.
-  private applyQuickFilter(rows: Order[], text: string): Order[] {
-    const query = text.trim().toLowerCase();
-    if (!query) {
-      return rows;
-    }
-    return rows.filter((order) =>
-      [order.orderId, order.orderDate, order.customerId, order.customerName, order.totalAmount, order.status].some(
-        (value) => String(value).toLowerCase().includes(query)
-      )
-    );
   }
 
   // Column header sort - same caveat as search: sorts the current page only,
@@ -332,14 +322,19 @@ export class ManageOrdersComponent {
     this.gridApi?.refreshInfiniteCache();
   }
 
+  // Re-queries the API (GET /api/Order/search once searchText is non-empty,
+  // GET /api/Order once it's cleared) and jumps back to page 1, since a new
+  // search's result set may be smaller than whatever page was showing.
   onQuickFilterInput(value: string): void {
     this.quickFilterText.set(value);
-    this.gridApi?.refreshInfiniteCache(); // re-pull the current page and re-apply the quick filter to it
+    this.gridApi?.paginationGoToFirstPage();
+    this.gridApi?.refreshInfiniteCache();
   }
 
   onClearSearch(): void {
     this.quickFilterText.set(''); // empty the search box
-    this.gridApi?.refreshInfiniteCache(); // drop the active quick filter so hidden rows reappear
+    this.gridApi?.paginationGoToFirstPage();
+    this.gridApi?.refreshInfiniteCache();
   }
 
   toggleColumnsMenu(): void {

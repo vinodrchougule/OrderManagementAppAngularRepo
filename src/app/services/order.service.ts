@@ -116,6 +116,24 @@ export class OrderService {
     );
   }
 
+  // GET /api/Order/search?searchText=..&PageNo=..&PageSize=.. - one page of orders
+  // matching searchText (e.g. customer name), plus paging metadata.
+  searchOrders(searchText: string, pageNo: number, pageSize: number): Observable<OrdersPage> {
+    const params = new HttpParams()
+      .set('searchText', searchText)
+      .set('PageNo', pageNo)
+      .set('PageSize', pageSize);
+    return this.http.get<OrderApiPage>(`${this.baseUrl}/search`, { params }).pipe(
+      map((page) => ({
+        items: page.items.map((item) => this.toOrder(item)),
+        pageNo: page.pageNo,
+        pageSize: page.pageSize,
+        totalCount: page.totalCount,
+        totalPages: page.totalPages
+      }))
+    );
+  }
+
   // orderDate comes back as a full ISO date-time ("2026-07-14T00:00:00") - trim to
   // the "yyyy-MM-dd" date-only form the rest of the app (formatOrderDate, edit/create
   // modals) expects.
