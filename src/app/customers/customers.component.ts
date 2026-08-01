@@ -174,10 +174,20 @@ export class CustomersComponent implements OnInit {
   }
 
   // deleteCustomer() uses responseType: 'text', so err.error holds the API's raw
-  // response body on failure - fall back to err.message only for network-level
-  // failures (e.g. CORS, connection refused) that never reached the server.
+  // response body on failure - it's usually a JSON string like
+  // {"status":400,"message":"..."}, so pull out just the message. Fall back to
+  // err.message only for network-level failures (e.g. CORS, connection refused)
+  // that never reached the server.
   private extractErrorMessage(err: HttpErrorResponse): string {
     if (typeof err.error === 'string' && err.error.trim().length > 0) {
+      try {
+        const parsed = JSON.parse(err.error);
+        if (parsed && typeof parsed.message === 'string' && parsed.message.trim().length > 0) {
+          return parsed.message;
+        }
+      } catch {
+        // Not JSON - fall through and use the raw string as-is.
+      }
       return err.error;
     }
     return err.message || 'Failed to delete customer. Please try again.';
