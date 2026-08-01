@@ -1,0 +1,72 @@
+<div class="page-wrapper">
+  <app-header></app-header>
+
+  <main class="page-content">
+    <h2 class="page-title">Customers</h2>
+
+    <div class="customers-toolbar">
+      <div class="search-group">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search customers..."
+          [value]="quickFilterText()"
+          (input)="onQuickFilterInput($any($event.target).value)"
+        />
+        <button type="button" class="toolbar-btn" (click)="onClearSearch()">Clear</button>
+      </div>
+
+      <div class="toolbar-actions">
+        <button type="button" class="toolbar-btn primary" (click)="onCreateNewCustomer()">
+          <svg class="plus-icon" width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor" />
+          </svg>
+          Create New Customer
+        </button>
+      </div>
+    </div>
+
+    <div class="grid-wrapper">
+      <ag-grid-angular
+        class="customers-grid"
+        [theme]="theme"
+        [rowData]="rowData()"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [quickFilterText]="quickFilterText()"
+        [pagination]="true"
+        [paginationPageSize]="10"
+        [paginationPageSizeSelector]="[10, 25, 50]"
+        [domLayout]="'autoHeight'"
+        [loading]="loading()"
+        [animateRows]="true"
+      />
+    </div>
+
+    <!-- Create/Edit Customer modal - shown only while formModalOpen() is true -->
+    <app-customer-form-modal
+      *ngIf="formModalOpen()"
+      [customer]="editingCustomer()"
+      (closed)="onFormModalClosed()"
+    ></app-customer-form-modal>
+  </main>
+</div>
+
+<!-- Delete confirmation - a top-level overlay, shown only while confirmDeleteOpen() is true -->
+<div class="confirm-overlay" *ngIf="confirmDeleteOpen()" (click)="onConfirmDeleteNo()">
+  <div class="confirm-box" (click)="$event.stopPropagation()">
+    <ng-container *ngIf="!deleteSuccessMessage(); else deleteSuccessTpl">
+      <p class="confirm-message">Are you sure, to delete this Customer?</p>
+      <span class="error-text" *ngIf="deleteError()">{{ deleteError() }}</span>
+      <div class="confirm-actions">
+        <button type="button" class="toolbar-btn danger" [disabled]="deleting()" (click)="onConfirmDeleteYes()">
+          {{ deleting() ? 'Deleting...' : 'Yes' }}
+        </button>
+        <button type="button" class="toolbar-btn" [disabled]="deleting()" (click)="onConfirmDeleteNo()">No</button>
+      </div>
+    </ng-container>
+    <ng-template #deleteSuccessTpl>
+      <p class="confirm-message success-text">{{ deleteSuccessMessage() }}</p>
+    </ng-template>
+  </div>
+</div>

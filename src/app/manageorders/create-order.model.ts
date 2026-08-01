@@ -1,15 +1,10 @@
 import { OrderLineItem } from './order.model';
 
-/** Hardcoded customer list for the Create New Order modal (no customers API yet). */
+/** Customer option shown in the Create New Order modal's dropdown, fetched from GET /api/Customer. */
 export interface CustomerOption {
   customerId: number;
   customerName: string;
 }
-
-export const CUSTOMER_OPTIONS: CustomerOption[] = [
-  { customerId: 1, customerName: 'Test Customer1' },
-  { customerId: 2, customerName: 'Test Customer2' }
-];
 
 /** Hardcoded item list for the Create New Order modal (no items API yet). */
 export interface ItemOption {

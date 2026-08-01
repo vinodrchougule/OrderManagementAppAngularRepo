@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { Order, OrderLineItem, OrderStatus } from '../order.model';
-import { CUSTOMER_OPTIONS, CustomerOption, ITEM_OPTIONS, ItemOption } from '../create-order.model';
+import { CustomerOption, ITEM_OPTIONS, ItemOption } from '../create-order.model';
 import { formatOrderDate } from '../order-date.util'; // dd-Mon-yyyy display formatting
 import { STATUS_COLORS } from '../status-colors.util'; // its keys double as the Status dropdown's options
 import { DraggableModalDirective } from '../../shared/draggable-modal.directive'; // shared, reusable drag behaviour
 import { OrderService, UpdateOrderRequest } from '../../services/order.service';
+import { CustomerService } from '../../services/customer.service';
 
 /**
  * "Edit Order" modal. Every field except Order Id can be edited - Order Date
@@ -34,7 +35,10 @@ export class EditOrderModalComponent implements OnInit {
   // Native <input type="date"> used only to drive the browser's calendar picker.
   @ViewChild('dateInput') dateInputRef?: ElementRef<HTMLInputElement>;
 
-  customerOptions: CustomerOption[] = CUSTOMER_OPTIONS;
+  customerOptions: CustomerOption[] = [];
+  customersLoading = signal(false);
+  customersError = signal<string | null>(null);
+
   itemOptions: ItemOption[] = ITEM_OPTIONS;
   statusOptions: OrderStatus[] = Object.keys(STATUS_COLORS) as OrderStatus[];
 
@@ -57,7 +61,11 @@ export class EditOrderModalComponent implements OnInit {
 
   totalAmount = computed(() => this.items().reduce((sum, item) => sum + item.lineTotal, 0));
 
-  constructor(private fb: FormBuilder, private orderService: OrderService) {
+  constructor(
+    private fb: FormBuilder,
+    private orderService: OrderService,
+    private customerService: CustomerService
+  ) {
     this.editForm = this.fb.group({
       customerId: ['', Validators.required],
       status: ['', Validators.required]
@@ -71,13 +79,24 @@ export class EditOrderModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // If the order's current customer isn't one of the hardcoded CUSTOMER_OPTIONS
-    // (mock orders use real-looking customers beyond the 2 test ones), add it so
-    // the dropdown has a matching option and actually shows the customer's name.
-    const hasCurrentCustomer = CUSTOMER_OPTIONS.some((c) => c.customerId === this.order.customerId);
-    this.customerOptions = hasCurrentCustomer
-      ? CUSTOMER_OPTIONS
-      : [{ customerId: this.order.customerId, customerName: this.order.customerName }, ...CUSTOMER_OPTIONS];
+    this.customersLoading.set(true);
+    this.customerService.getCustomers().subscribe({
+      next: (customers) => {
+        // If the order's current customer isn't in the fetched list (e.g. mock
+        // orders using a customer that's since been removed), add it so the
+        // dropdown has a matching option and actually shows the customer's name.
+        const hasCurrentCustomer = customers.some((c) => c.customerId === this.order.customerId);
+        this.customerOptions = hasCurrentCustomer
+          ? customers
+          : [{ customerId: this.order.customerId, customerName: this.order.customerName }, ...customers];
+        this.customersLoading.set(false);
+      },
+      error: () => {
+        this.customersError.set('Failed to load customers. Please try again.');
+        this.customerOptions = [{ customerId: this.order.customerId, customerName: this.order.customerName }];
+        this.customersLoading.set(false);
+      }
+    });
 
     // Seed the editable fields and item list from the order passed in.
     this.orderDateIso.set(this.order.orderDate);

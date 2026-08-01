@@ -1,10 +1,9 @@
-import { Component, EventEmitter, Output, computed, signal } from '@angular/core'; // OnDestroy no longer needed - drag moved to DraggableModalDirective
+import { Component, EventEmitter, OnInit, Output, computed, signal } from '@angular/core'; // OnDestroy no longer needed - drag moved to DraggableModalDirective
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import {
-  CUSTOMER_OPTIONS,
   CustomerOption,
   ITEM_OPTIONS,
   ItemOption,
@@ -14,6 +13,7 @@ import { OrderLineItem } from '../order.model'; // moved to order.model.ts so Vi
 import { formatOrderDate, todayIsoDate } from '../order-date.util';
 import { DraggableModalDirective } from '../../shared/draggable-modal.directive'; // shared, reusable drag behaviour
 import { OrderService } from '../../services/order.service';
+import { CustomerService } from '../../services/customer.service';
 
 /**
  * "Create New Order" modal. Header fields (Order Date, Customer, Total Amount)
@@ -27,11 +27,14 @@ import { OrderService } from '../../services/order.service';
   templateUrl: './create-order-modal.component.html',
   styleUrls: ['./create-order-modal.component.css']
 })
-export class CreateOrderModalComponent {
+export class CreateOrderModalComponent implements OnInit {
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<NewOrderPayload>();
 
-  customerOptions: CustomerOption[] = CUSTOMER_OPTIONS;
+  customerOptions: CustomerOption[] = [];
+  customersLoading = signal(false);
+  customersError = signal<string | null>(null);
+
   itemOptions: ItemOption[] = ITEM_OPTIONS;
 
   // Order Date is read-only/display-only, so it isn't a form control.
@@ -53,7 +56,11 @@ export class CreateOrderModalComponent {
     this.lineItems().reduce((sum, item) => sum + item.lineTotal, 0)
   );
 
-  constructor(private fb: FormBuilder, private orderService: OrderService) {
+  constructor(
+    private fb: FormBuilder,
+    private orderService: OrderService,
+    private customerService: CustomerService
+  ) {
     this.headerForm = this.fb.group({
       customerId: ['', Validators.required]
     });
@@ -62,6 +69,20 @@ export class CreateOrderModalComponent {
       itemId: ['', Validators.required],
       quantity: ['', [Validators.required, Validators.pattern(/^[1-9]\d*$/)]], // required positive integer
       unitPrice: ['', [Validators.required, Validators.pattern(/^\d+(\.\d{1,2})?$/), Validators.min(0.01)]] // up to 2 decimals
+    });
+  }
+
+  ngOnInit(): void {
+    this.customersLoading.set(true);
+    this.customerService.getCustomers().subscribe({
+      next: (customers) => {
+        this.customerOptions = customers;
+        this.customersLoading.set(false);
+      },
+      error: () => {
+        this.customersError.set('Failed to load customers. Please try again.');
+        this.customersLoading.set(false);
+      }
     });
   }
 

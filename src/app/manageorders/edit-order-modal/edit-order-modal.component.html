@@ -40,13 +40,14 @@
 
         <div class="form-group">
           <label>Customer Name <span class="required-mark">*</span></label>
-          <select class="form-input" formControlName="customerId">
-            <option value="" disabled>Select customer</option>
+          <select class="form-input" formControlName="customerId" [disabled]="customersLoading()">
+            <option value="" disabled>{{ customersLoading() ? 'Loading customers...' : 'Select customer' }}</option>
             <option *ngFor="let c of customerOptions" [value]="c.customerId">{{ c.customerName }}</option>
           </select>
           <span class="error-text" *ngIf="submitted() && f['customerId'].invalid">
             Customer Name is required.
           </span>
+          <span class="error-text" *ngIf="customersError()">{{ customersError() }}</span>
         </div>
 
         <div class="form-group">
