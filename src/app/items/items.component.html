@@ -2,14 +2,14 @@
   <app-header></app-header>
 
   <main class="page-content">
-    <h2 class="page-title">Customers</h2>
+    <h2 class="page-title">Items</h2>
 
-    <div class="customers-toolbar">
+    <div class="items-toolbar">
       <div class="search-group">
         <input
           type="text"
           class="search-input"
-          placeholder="Search customers..."
+          placeholder="Search items..."
           [value]="quickFilterText()"
           (input)="onQuickFilterInput($any($event.target).value)"
         />
@@ -17,18 +17,18 @@
       </div>
 
       <div class="toolbar-actions">
-        <button type="button" class="toolbar-btn primary" (click)="onCreateNewCustomer()">
+        <button type="button" class="toolbar-btn primary" (click)="onCreateNewItem()">
           <svg class="plus-icon" width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor" />
           </svg>
-          Create New Customer
+          Create New Item
         </button>
       </div>
     </div>
 
     <div class="grid-wrapper">
       <ag-grid-angular
-        class="customers-grid"
+        class="items-grid"
         [theme]="theme"
         [rowData]="rowData()"
         [columnDefs]="columnDefs"
@@ -43,12 +43,12 @@
       />
     </div>
 
-    <!-- Create/Edit Customer modal - shown only while formModalOpen() is true -->
-    <app-customer-form-modal
+    <!-- Create/Edit Item modal - shown only while formModalOpen() is true -->
+    <app-item-form-modal
       *ngIf="formModalOpen()"
-      [customer]="editingCustomer()"
+      [item]="editingItem()"
       (closed)="onFormModalClosed()"
-    ></app-customer-form-modal>
+    ></app-item-form-modal>
   </main>
 </div>
 
@@ -56,7 +56,7 @@
 <div class="confirm-overlay" *ngIf="confirmDeleteOpen()" (appBackdropClose)="onConfirmDeleteNo()">
   <div class="confirm-box">
     <ng-container *ngIf="!deleteSuccessMessage(); else deleteSuccessTpl">
-      <p class="confirm-message">Are you sure, to delete this Customer?</p>
+      <p class="confirm-message">Are you sure, to delete this Item?</p>
       <span class="error-text" *ngIf="deleteError()">{{ deleteError() }}</span>
       <div class="confirm-actions">
         <button type="button" class="toolbar-btn danger" [disabled]="deleting()" (click)="onConfirmDeleteYes()">

@@ -1,22 +1,22 @@
 <div class="modal-backdrop" (appBackdropClose)="onCancel()">
   <div class="modal-card" appDraggableModal>
     <div class="modal-header">
-      <h3>{{ isEdit ? 'Edit Customer' : 'Create New Customer' }}</h3>
+      <h3>{{ isEdit ? 'Edit Item' : 'Create New Item' }}</h3>
       <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()">✕</button>
     </div>
 
     <div class="modal-body">
       <form [formGroup]="form" class="header-fields">
         <div class="form-group" *ngIf="isEdit">
-          <label>Customer Id</label>
-          <input type="text" class="form-input" [value]="customer!.customerId" readonly />
+          <label>Item Id</label>
+          <input type="text" class="form-input" [value]="item!.itemId" readonly />
         </div>
 
         <div class="form-group">
-          <label>Customer Name <span class="required-mark">*</span></label>
-          <input type="text" class="form-input" formControlName="customerName" placeholder="Enter customer name" />
-          <span class="error-text" *ngIf="submitted() && f['customerName'].invalid">
-            Customer Name is required.
+          <label>Item Name <span class="required-mark">*</span></label>
+          <input type="text" class="form-input" formControlName="itemName" placeholder="Enter item name" />
+          <span class="error-text" *ngIf="submitted() && f['itemName'].invalid">
+            Item Name is required.
           </span>
         </div>
       </form>

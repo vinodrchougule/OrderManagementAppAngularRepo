@@ -5,15 +5,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import {
   CustomerOption,
-  ITEM_OPTIONS,
   ItemOption,
   NewOrderPayload
 } from '../create-order.model';
 import { OrderLineItem } from '../order.model'; // moved to order.model.ts so View Order can reuse it
 import { formatOrderDate, todayIsoDate } from '../order-date.util';
 import { DraggableModalDirective } from '../../shared/draggable-modal.directive'; // shared, reusable drag behaviour
+import { BackdropCloseDirective } from '../../shared/backdrop-close.directive';
 import { OrderService } from '../../services/order.service';
 import { CustomerService } from '../../services/customer.service';
+import { ItemService } from '../../services/item.service';
 
 /**
  * "Create New Order" modal. Header fields (Order Date, Customer, Total Amount)
@@ -23,7 +24,7 @@ import { CustomerService } from '../../services/customer.service';
 @Component({
   selector: 'app-create-order-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DraggableModalDirective],
+  imports: [CommonModule, ReactiveFormsModule, DraggableModalDirective, BackdropCloseDirective],
   templateUrl: './create-order-modal.component.html',
   styleUrls: ['./create-order-modal.component.css']
 })
@@ -35,7 +36,9 @@ export class CreateOrderModalComponent implements OnInit {
   customersLoading = signal(false);
   customersError = signal<string | null>(null);
 
-  itemOptions: ItemOption[] = ITEM_OPTIONS;
+  itemOptions: ItemOption[] = [];
+  itemsLoading = signal(false);
+  itemsError = signal<string | null>(null);
 
   // Order Date is read-only/display-only, so it isn't a form control.
   todayIso = todayIsoDate();
@@ -59,7 +62,8 @@ export class CreateOrderModalComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private orderService: OrderService,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private itemService: ItemService
   ) {
     this.headerForm = this.fb.group({
       customerId: ['', Validators.required]
@@ -82,6 +86,18 @@ export class CreateOrderModalComponent implements OnInit {
       error: () => {
         this.customersError.set('Failed to load customers. Please try again.');
         this.customersLoading.set(false);
+      }
+    });
+
+    this.itemsLoading.set(true);
+    this.itemService.getItems().subscribe({
+      next: (items) => {
+        this.itemOptions = items;
+        this.itemsLoading.set(false);
+      },
+      error: () => {
+        this.itemsError.set('Failed to load items. Please try again.');
+        this.itemsLoading.set(false);
       }
     });
   }

@@ -1,5 +1,5 @@
-<div class="modal-backdrop" (click)="onClose()">
-  <div class="modal-card" appDraggableModal (click)="$event.stopPropagation()">
+<div class="modal-backdrop" (appBackdropClose)="onClose()">
+  <div class="modal-card" appDraggableModal>
     <div class="modal-header">
       <h3>View Order</h3>
       <button type="button" class="icon-close-btn" title="Close" (click)="onClose()">✕</button>
@@ -81,8 +81,8 @@
 
 <!-- Delete confirmation - a separate top-level overlay (sibling of modal-backdrop,
      not nested inside modal-card) so it isn't affected by the card's drag transform/overflow. -->
-<div class="confirm-overlay" *ngIf="confirmDeleteOpen()" (click)="onConfirmDeleteNo()">
-  <div class="confirm-box" (click)="$event.stopPropagation()">
+<div class="confirm-overlay" *ngIf="confirmDeleteOpen()" (appBackdropClose)="onConfirmDeleteNo()">
+  <div class="confirm-box">
     <ng-container *ngIf="!deleteSuccessMessage(); else deleteSuccessTpl">
       <p class="confirm-message">Are you sure, to delete this Order?</p>
       <span class="error-text" *ngIf="deleteError()">{{ deleteError() }}</span>

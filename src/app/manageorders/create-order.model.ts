@@ -6,16 +6,11 @@ export interface CustomerOption {
   customerName: string;
 }
 
-/** Hardcoded item list for the Create New Order modal (no items API yet). */
+/** Item option shown in the Create/Edit Order modals' dropdown, fetched from GET /api/Item. */
 export interface ItemOption {
   itemId: number;
   itemName: string;
 }
-
-export const ITEM_OPTIONS: ItemOption[] = [
-  { itemId: 1, itemName: 'Test Item1' },
-  { itemId: 2, itemName: 'Test Item2' }
-];
 
 /** Payload emitted by the modal's "Save Order" button. */
 export interface NewOrderPayload {

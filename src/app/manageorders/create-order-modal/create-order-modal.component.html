@@ -1,5 +1,5 @@
-<div class="modal-backdrop" (click)="onCancel()">
-  <div class="modal-card" appDraggableModal (click)="$event.stopPropagation()">
+<div class="modal-backdrop" (appBackdropClose)="onCancel()">
+  <div class="modal-card" appDraggableModal>
     <div class="modal-header">
       <h3>Create New Order</h3>
       <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()">✕</button>
@@ -38,13 +38,14 @@
       <form [formGroup]="itemForm" class="item-entry-row">
         <div class="form-group">
           <label>Item Name <span class="required-mark">*</span></label>
-          <select class="form-input" formControlName="itemId">
-            <option value="" disabled>Select item</option>
+          <select class="form-input" formControlName="itemId" [disabled]="itemsLoading()">
+            <option value="" disabled>{{ itemsLoading() ? 'Loading items...' : 'Select item' }}</option>
             <option *ngFor="let i of itemOptions" [value]="i.itemId">{{ i.itemName }}</option>
           </select>
           <span class="error-text" *ngIf="itemFormSubmitted() && itf['itemId'].invalid">
             Item Name is required.
           </span>
+          <span class="error-text" *ngIf="itemsError()">{{ itemsError() }}</span>
         </div>
 
         <div class="form-group">

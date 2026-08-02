@@ -6,6 +6,7 @@ import { Order } from '../order.model';
 import { formatOrderDate } from '../order-date.util';
 import { STATUS_COLORS } from '../status-colors.util';
 import { DraggableModalDirective } from '../../shared/draggable-modal.directive'; // shared, reusable drag behaviour
+import { BackdropCloseDirective } from '../../shared/backdrop-close.directive';
 import { OrderService } from '../../services/order.service';
 
 /**
@@ -19,7 +20,7 @@ import { OrderService } from '../../services/order.service';
 @Component({
   selector: 'app-view-order-modal',
   standalone: true,
-  imports: [CommonModule, DraggableModalDirective],
+  imports: [CommonModule, DraggableModalDirective, BackdropCloseDirective],
   templateUrl: './view-order-modal.component.html',
   styleUrls: ['./view-order-modal.component.css']
 })

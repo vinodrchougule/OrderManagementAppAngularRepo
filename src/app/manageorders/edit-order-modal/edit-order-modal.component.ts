@@ -4,12 +4,14 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { Order, OrderLineItem, OrderStatus } from '../order.model';
-import { CustomerOption, ITEM_OPTIONS, ItemOption } from '../create-order.model';
+import { CustomerOption, ItemOption } from '../create-order.model';
 import { formatOrderDate } from '../order-date.util'; // dd-Mon-yyyy display formatting
 import { STATUS_COLORS } from '../status-colors.util'; // its keys double as the Status dropdown's options
 import { DraggableModalDirective } from '../../shared/draggable-modal.directive'; // shared, reusable drag behaviour
+import { BackdropCloseDirective } from '../../shared/backdrop-close.directive';
 import { OrderService, UpdateOrderRequest } from '../../services/order.service';
 import { CustomerService } from '../../services/customer.service';
+import { ItemService } from '../../services/item.service';
 
 /**
  * "Edit Order" modal. Every field except Order Id can be edited - Order Date
@@ -23,7 +25,7 @@ import { CustomerService } from '../../services/customer.service';
 @Component({
   selector: 'app-edit-order-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DraggableModalDirective],
+  imports: [CommonModule, ReactiveFormsModule, DraggableModalDirective, BackdropCloseDirective],
   templateUrl: './edit-order-modal.component.html',
   styleUrls: ['./edit-order-modal.component.css']
 })
@@ -39,7 +41,10 @@ export class EditOrderModalComponent implements OnInit {
   customersLoading = signal(false);
   customersError = signal<string | null>(null);
 
-  itemOptions: ItemOption[] = ITEM_OPTIONS;
+  itemOptions: ItemOption[] = [];
+  itemsLoading = signal(false);
+  itemsError = signal<string | null>(null);
+
   statusOptions: OrderStatus[] = Object.keys(STATUS_COLORS) as OrderStatus[];
 
   // Order Date is kept as its own signal (not a form control) so we can show
@@ -64,7 +69,8 @@ export class EditOrderModalComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private orderService: OrderService,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private itemService: ItemService
   ) {
     this.editForm = this.fb.group({
       customerId: ['', Validators.required],
@@ -95,6 +101,18 @@ export class EditOrderModalComponent implements OnInit {
         this.customersError.set('Failed to load customers. Please try again.');
         this.customerOptions = [{ customerId: this.order.customerId, customerName: this.order.customerName }];
         this.customersLoading.set(false);
+      }
+    });
+
+    this.itemsLoading.set(true);
+    this.itemService.getItems().subscribe({
+      next: (items) => {
+        this.itemOptions = items;
+        this.itemsLoading.set(false);
+      },
+      error: () => {
+        this.itemsError.set('Failed to load items. Please try again.');
+        this.itemsLoading.set(false);
       }
     });
 

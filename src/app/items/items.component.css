@@ -1,0 +1,142 @@
+.page-title {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.items-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.search-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 260px;
+}
+
+.search-input {
+  flex: 1 1 260px;
+  max-width: 340px;
+  padding: 9px 12px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fff;
+}
+
+.search-input:focus {
+  border-color: #2563eb;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolbar-btn {
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.toolbar-btn.primary {
+  color: #ffffff;
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.toolbar-btn.primary:hover {
+  background-color: #1d4ed8;
+}
+
+.toolbar-btn.danger {
+  color: #ffffff;
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.toolbar-btn.danger:hover {
+  background-color: #b91c1c;
+}
+
+.plus-icon {
+  flex-shrink: 0;
+}
+
+.grid-wrapper {
+  width: 100%;
+}
+
+.items-grid {
+  width: 100%;
+}
+
+/* Delete confirmation dialog - top-level overlay, above everything else on the page. */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(17, 24, 39, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1100;
+}
+
+.confirm-box {
+  width: 100%;
+  max-width: 360px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  padding: 20px;
+}
+
+.confirm-message {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: #1f2937;
+  text-align: center;
+}
+
+.confirm-message.success-text {
+  margin: 0;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.error-text {
+  display: block;
+  margin: -10px 0 14px;
+  font-size: 12px;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}

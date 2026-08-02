@@ -6,35 +6,35 @@ import { AllCommunityModule, ColDef, ModuleRegistry, themeQuartz } from 'ag-grid
 
 import { AppHeaderComponent } from '../shared/app-header.component';
 import { BackdropCloseDirective } from '../shared/backdrop-close.directive';
-import { CustomerService } from '../services/customer.service';
-import { CustomerOption } from '../manageorders/create-order.model';
-import { CustomerActionsCellRendererComponent } from './customer-actions-cell-renderer.component';
-import { CustomerFormModalComponent } from './customer-form-modal/customer-form-modal.component';
+import { ItemService } from '../services/item.service';
+import { ItemOption } from '../manageorders/create-order.model';
+import { ItemActionsCellRendererComponent } from './item-actions-cell-renderer.component';
+import { ItemFormModalComponent } from './item-form-modal/item-form-modal.component';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 @Component({
-  selector: 'app-customers',
+  selector: 'app-items',
   standalone: true,
-  imports: [CommonModule, AppHeaderComponent, AgGridAngular, CustomerFormModalComponent, BackdropCloseDirective],
-  templateUrl: './customers.component.html',
-  styleUrls: ['./customers.component.css']
+  imports: [CommonModule, AppHeaderComponent, AgGridAngular, ItemFormModalComponent, BackdropCloseDirective],
+  templateUrl: './items.component.html',
+  styleUrls: ['./items.component.css']
 })
-export class CustomersComponent implements OnInit {
+export class ItemsComponent implements OnInit {
   loading = signal(false);
   quickFilterText = signal('');
-  rowData = signal<CustomerOption[]>([]);
+  rowData = signal<ItemOption[]>([]);
 
-  formModalOpen = signal(false); // controls the Create/Edit Customer modal's visibility
-  editingCustomer = signal<CustomerOption | null>(null); // null => Create mode, set => Edit mode
+  formModalOpen = signal(false); // controls the Create/Edit Item modal's visibility
+  editingItem = signal<ItemOption | null>(null); // null => Create mode, set => Edit mode
 
   confirmDeleteOpen = signal(false); // controls the "Are you sure...?" dialog
-  customerPendingDelete = signal<CustomerOption | null>(null);
-  deleting = signal(false); // true while the delete-customer API call is in flight
+  itemPendingDelete = signal<ItemOption | null>(null);
+  deleting = signal(false); // true while the delete-item API call is in flight
   deleteError = signal<string | null>(null); // set when the delete call fails
   deleteSuccessMessage = signal<string | null>(null); // set on success; shown for 900ms before the dialog closes
 
-  // AG Grid v33+ Theming API - matches the app's blue accent colour (same as Manage Orders).
+  // AG Grid v33+ Theming API - matches the app's blue accent colour (same as Customers).
   theme = themeQuartz.withParams({
     accentColor: '#2563eb',
     borderRadius: 6,
@@ -50,20 +50,20 @@ export class CustomersComponent implements OnInit {
     minWidth: 110
   };
 
-  columnDefs: ColDef<CustomerOption>[] = [
+  columnDefs: ColDef<ItemOption>[] = [
     {
-      colId: 'customerId',
-      field: 'customerId',
-      headerName: 'Customer Id',
+      colId: 'itemId',
+      field: 'itemId',
+      headerName: 'Item Id',
       flex: 1,
       minWidth: 110,
       headerClass: 'header-center',
       cellClass: 'cell-center'
     },
     {
-      colId: 'customerName',
-      field: 'customerName',
-      headerName: 'Customer Name',
+      colId: 'itemName',
+      field: 'itemName',
+      headerName: 'Item Name',
       flex: 2,
       minWidth: 180,
       headerClass: 'header-left',
@@ -79,26 +79,26 @@ export class CustomersComponent implements OnInit {
       pinned: 'right',
       headerClass: ['header-center', 'actions-col-bg'],
       cellClass: ['cell-center', 'actions-col-bg'],
-      cellRenderer: CustomerActionsCellRendererComponent,
+      cellRenderer: ItemActionsCellRendererComponent,
       cellRendererParams: {
-        onEdit: (customer: CustomerOption) => this.onEditCustomer(customer),
-        onDelete: (customer: CustomerOption) => this.onDeleteCustomer(customer)
+        onEdit: (item: ItemOption) => this.onEditItem(item),
+        onDelete: (item: ItemOption) => this.onDeleteItem(item)
       }
     }
   ];
 
-  constructor(private customerService: CustomerService) {}
+  constructor(private itemService: ItemService) {}
 
   ngOnInit(): void {
-    this.loadCustomers();
+    this.loadItems();
   }
 
-  private loadCustomers(): void {
+  private loadItems(): void {
     this.loading.set(true);
-    this.customerService.getCustomers().subscribe({
-      next: (customers) => {
+    this.itemService.getItems().subscribe({
+      next: (items) => {
         this.loading.set(false);
-        this.rowData.set(customers);
+        this.rowData.set(items);
       },
       error: () => this.loading.set(false)
     });
@@ -112,13 +112,13 @@ export class CustomersComponent implements OnInit {
     this.quickFilterText.set('');
   }
 
-  onCreateNewCustomer(): void {
-    this.editingCustomer.set(null);
+  onCreateNewItem(): void {
+    this.editingItem.set(null);
     this.formModalOpen.set(true);
   }
 
-  onEditCustomer(customer: CustomerOption): void {
-    this.editingCustomer.set(customer);
+  onEditItem(item: ItemOption): void {
+    this.editingItem.set(item);
     this.formModalOpen.set(true);
   }
 
@@ -127,38 +127,38 @@ export class CustomersComponent implements OnInit {
   // actual point of the latter.
   onFormModalClosed(): void {
     this.formModalOpen.set(false);
-    this.editingCustomer.set(null);
-    this.loadCustomers();
+    this.editingItem.set(null);
+    this.loadItems();
   }
 
-  onDeleteCustomer(customer: CustomerOption): void {
-    this.customerPendingDelete.set(customer);
+  onDeleteItem(item: ItemOption): void {
+    this.itemPendingDelete.set(item);
     this.deleteError.set(null);
     this.confirmDeleteOpen.set(true);
   }
 
-  // "Yes" in the confirmation dialog - calls DELETE /api/Customer/{customerId}. On
+  // "Yes" in the confirmation dialog - calls DELETE /api/Item/{itemId}. On
   // success the dialog stays open for 900ms showing a success message, then closes
   // and the grid is refreshed from the server.
   onConfirmDeleteYes(): void {
-    const customer = this.customerPendingDelete();
-    if (!customer) {
+    const item = this.itemPendingDelete();
+    if (!item) {
       return;
     }
 
     this.deleteError.set(null);
     this.deleting.set(true);
 
-    this.customerService.deleteCustomer(customer.customerId).subscribe({
+    this.itemService.deleteItem(item.itemId).subscribe({
       next: (response) => {
         this.deleting.set(false);
-        this.deleteSuccessMessage.set(response?.trim() || 'Customer deleted successfully.');
+        this.deleteSuccessMessage.set(response?.trim() || 'Item deleted successfully.');
 
         setTimeout(() => {
           this.confirmDeleteOpen.set(false);
           this.deleteSuccessMessage.set(null);
-          this.customerPendingDelete.set(null);
-          this.loadCustomers();
+          this.itemPendingDelete.set(null);
+          this.loadItems();
         }, 900);
       },
       error: (err: HttpErrorResponse) => {
@@ -170,11 +170,11 @@ export class CustomersComponent implements OnInit {
 
   onConfirmDeleteNo(): void {
     this.confirmDeleteOpen.set(false);
-    this.customerPendingDelete.set(null);
+    this.itemPendingDelete.set(null);
     this.deleteError.set(null);
   }
 
-  // deleteCustomer() uses responseType: 'text', so err.error holds the API's raw
+  // deleteItem() uses responseType: 'text', so err.error holds the API's raw
   // response body on failure - it's usually a JSON string like
   // {"status":400,"message":"..."}, so pull out just the message. Fall back to
   // err.message only for network-level failures (e.g. CORS, connection refused)
@@ -191,6 +191,6 @@ export class CustomersComponent implements OnInit {
       }
       return err.error;
     }
-    return err.message || 'Failed to delete customer. Please try again.';
+    return err.message || 'Failed to delete item. Please try again.';
   }
 }
