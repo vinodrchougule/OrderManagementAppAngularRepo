@@ -99,6 +99,17 @@ export class CustomerFormModalComponent implements OnInit {
     if (typeof err.error === 'string' && err.error.trim().length > 0) {
       try {
         const parsed = JSON.parse(err.error);
+        // ModelState validation failures carry the real per-field messages in "errors"
+        // (e.g. [{"Key":"CustomerName","Value":["Customer Name must be minimum 3 characters."]}])
+        // - "message" on its own is just the generic "Validation failed" wrapper text.
+        if (Array.isArray(parsed?.errors) && parsed.errors.length > 0) {
+          const messages = parsed.errors
+            .flatMap((e: any) => (Array.isArray(e?.Value) ? e.Value : []))
+            .filter((m: any) => typeof m === 'string' && m.trim().length > 0);
+          if (messages.length > 0) {
+            return messages.join(' ');
+          }
+        }
         if (parsed && typeof parsed.message === 'string' && parsed.message.trim().length > 0) {
           return parsed.message;
         }

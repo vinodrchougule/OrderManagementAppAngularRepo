@@ -15,14 +15,19 @@
           placeholder="Enter username"
           [class.invalid]="f['username'].invalid && (f['username'].touched || submitted())"
         />
-        <div
-          class="error-text"
-          *ngIf="f['username'].invalid && (f['username'].touched || submitted())"
-        >
-          <span *ngIf="f['username'].errors?.['required']">Username is required.</span>
-          <span *ngIf="f['username'].errors?.['minlength']">Username must be at least 3 characters.</span>
-          <span *ngIf="f['username'].errors?.['maxlength']">Username cannot exceed 20 characters.</span>
+        @if (f['username'].invalid && (f['username'].touched || submitted())) {
+        <div class="error-text">
+          @if (f['username'].errors?.['required']) {
+          <span>Username is required.</span>
+          }
+          @if (f['username'].errors?.['minlength']) {
+          <span>Username must be at least 3 characters.</span>
+          }
+          @if (f['username'].errors?.['maxlength']) {
+          <span>Username cannot exceed 20 characters.</span>
+          }
         </div>
+        }
       </div>
 
       <!-- Password -->
@@ -35,13 +40,16 @@
           placeholder="Enter password"
           [class.invalid]="f['password'].invalid && (f['password'].touched || submitted())"
         />
-        <div
-          class="error-text"
-          *ngIf="f['password'].invalid && (f['password'].touched || submitted())"
-        >
-          <span *ngIf="f['password'].errors?.['required']">Password is required.</span>
-          <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 8 characters.</span>
+        @if (f['password'].invalid && (f['password'].touched || submitted())) {
+        <div class="error-text">
+          @if (f['password'].errors?.['required']) {
+          <span>Password is required.</span>
+          }
+          @if (f['password'].errors?.['minlength']) {
+          <span>Password must be at least 8 characters.</span>
+          }
         </div>
+        }
       </div>
 
       <!-- Remember me / Forgot password -->
@@ -53,13 +61,17 @@
         <a href="javascript:void(0)" class="link">Forgot password?</a>
       </div>
 
-      <div class="success-message" *ngIf="successMessage()">
+      @if (successMessage()) {
+      <div class="success-message">
         {{ successMessage() }}
       </div>
+      }
 
-      <div class="server-error" *ngIf="serverError()">
+      @if (serverError()) {
+      <div class="server-error">
         {{ serverError() }}
       </div>
+      }
 
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" [disabled]="submitting()">

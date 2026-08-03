@@ -17,12 +17,18 @@
           <label>Customer Name <span class="required-mark">*</span></label>
           <select class="form-input" formControlName="customerId" [disabled]="customersLoading()">
             <option value="" disabled>{{ customersLoading() ? 'Loading customers...' : 'Select customer' }}</option>
-            <option *ngFor="let c of customerOptions" [value]="c.customerId">{{ c.customerName }}</option>
+            @for (c of customerOptions; track c.customerId) {
+            <option [value]="c.customerId">{{ c.customerName }}</option>
+            }
           </select>
-          <span class="error-text" *ngIf="headerSubmitted() && hf['customerId'].invalid">
+          @if (headerSubmitted() && hf['customerId'].invalid) {
+          <span class="error-text">
             Customer Name is required.
           </span>
-          <span class="error-text" *ngIf="customersError()">{{ customersError() }}</span>
+          }
+          @if (customersError()) {
+          <span class="error-text">{{ customersError() }}</span>
+          }
         </div>
 
         <div class="form-group">
@@ -40,28 +46,38 @@
           <label>Item Name <span class="required-mark">*</span></label>
           <select class="form-input" formControlName="itemId" [disabled]="itemsLoading()">
             <option value="" disabled>{{ itemsLoading() ? 'Loading items...' : 'Select item' }}</option>
-            <option *ngFor="let i of itemOptions" [value]="i.itemId">{{ i.itemName }}</option>
+            @for (i of itemOptions; track i.itemId) {
+            <option [value]="i.itemId">{{ i.itemName }}</option>
+            }
           </select>
-          <span class="error-text" *ngIf="itemFormSubmitted() && itf['itemId'].invalid">
+          @if (itemFormSubmitted() && itf['itemId'].invalid) {
+          <span class="error-text">
             Item Name is required.
           </span>
-          <span class="error-text" *ngIf="itemsError()">{{ itemsError() }}</span>
+          }
+          @if (itemsError()) {
+          <span class="error-text">{{ itemsError() }}</span>
+          }
         </div>
 
         <div class="form-group">
           <label>Quantity <span class="required-mark">*</span></label>
           <input type="number" class="form-input" formControlName="quantity" min="1" step="1" placeholder="0" />
-          <span class="error-text" *ngIf="itemFormSubmitted() && itf['quantity'].invalid">
+          @if (itemFormSubmitted() && itf['quantity'].invalid) {
+          <span class="error-text">
             Enter a whole number quantity (1 or more).
           </span>
+          }
         </div>
 
         <div class="form-group">
           <label>Unit Price <span class="required-mark">*</span></label>
           <input type="number" class="form-input" formControlName="unitPrice" min="0.01" step="0.01" placeholder="0.00" />
-          <span class="error-text" *ngIf="itemFormSubmitted() && itf['unitPrice'].invalid">
+          @if (itemFormSubmitted() && itf['unitPrice'].invalid) {
+          <span class="error-text">
             Enter a valid price (up to 2 decimal places).
           </span>
+          }
         </div>
 
         <div class="form-group add-item-group">
@@ -84,7 +100,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of lineItems(); let i = index">
+            @for (item of lineItems(); track $index; let i = $index) {
+            <tr>
               <td class="col-center">{{ item.itemId }}</td>
               <td>{{ item.itemName }}</td>
               <td class="col-center">{{ item.quantity }}</td>
@@ -94,19 +111,28 @@
                 <button type="button" class="icon-close-btn small" title="Remove" (click)="onRemoveItem(i)">✕</button>
               </td>
             </tr>
-            <tr *ngIf="lineItems().length === 0">
+            }
+            @if (lineItems().length === 0) {
+            <tr>
               <td class="empty-row" colspan="6">No items added yet.</td>
             </tr>
+            }
           </tbody>
         </table>
       </div>
 
-      <span class="error-text" *ngIf="headerSubmitted() && lineItems().length === 0">
+      @if (headerSubmitted() && lineItems().length === 0) {
+      <span class="error-text">
         Add at least one item to the order.
       </span>
+      }
 
-      <span class="error-text" *ngIf="saveError()">{{ saveError() }}</span>
-      <span class="success-text" *ngIf="saveSuccessMessage()">{{ saveSuccessMessage() }}</span>
+      @if (saveError()) {
+      <span class="error-text">{{ saveError() }}</span>
+      }
+      @if (saveSuccessMessage()) {
+      <span class="success-text">{{ saveSuccessMessage() }}</span>
+      }
     </div>
 
     <div class="modal-footer">

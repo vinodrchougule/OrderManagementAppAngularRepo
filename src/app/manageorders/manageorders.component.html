@@ -30,7 +30,8 @@
           </button>
           @if (columnsMenuOpen()) {
           <div class="columns-panel">
-            <label *ngFor="let col of toggleableColumns()" class="columns-panel-item">
+            @for (col of toggleableColumns(); track col.colId) {
+            <label class="columns-panel-item">
               <input
                 type="checkbox"
                 [checked]="col.visible"
@@ -38,6 +39,7 @@
               />
               {{ col.label }}
             </label>
+            }
           </div>
         }
         </div>
@@ -69,25 +71,28 @@
     </div>
 
     <!-- Create New Order modal - shown only while createOrderModalOpen() is true -->
+    @if (createOrderModalOpen()) {
     <app-create-order-modal
-      *ngIf="createOrderModalOpen()"
       (closed)="onCreateOrderModalClosed()"
       (saved)="onOrderSaved($event)"
     ></app-create-order-modal>
+    }
 
     <!-- View Order modal - shown only while viewOrderModalOpen() is true and an order is selected -->
+    @if (viewOrderModalOpen() && selectedOrder(); as order) {
     <app-view-order-modal
-      *ngIf="viewOrderModalOpen() && selectedOrder() as order"
       [order]="order"
       (closed)="onViewOrderModalClosed()"
       (editOrder)="onEditOrderFromView($event)"
     ></app-view-order-modal>
+    }
 
     <!-- Edit Order modal - shown only while editOrderModalOpen() is true and an order is selected -->
+    @if (editOrderModalOpen() && selectedOrder(); as order) {
     <app-edit-order-modal
-      *ngIf="editOrderModalOpen() && selectedOrder() as order"
       [order]="order"
       (closed)="onEditOrderModalClosed()"
     ></app-edit-order-modal>
+    }
   </main>
 </div>

@@ -7,34 +7,41 @@
 
     <div class="modal-body">
       <form [formGroup]="form" class="header-fields">
-        <div class="form-group" *ngIf="isEdit">
+        @if (isEdit) {
+        <div class="form-group">
           <label>Customer Id</label>
           <input type="text" class="form-input" [value]="customer!.customerId" readonly />
         </div>
+        }
 
         <div class="form-group">
           <label>Customer Name <span class="required-mark">*</span></label>
           <input type="text" class="form-input" formControlName="customerName" placeholder="Enter customer name" />
-          <span class="error-text" *ngIf="submitted() && f['customerName'].invalid">
+          @if (submitted() && f['customerName'].invalid) {
+          <span class="error-text">
             Customer Name is required.
           </span>
+          }
         </div>
       </form>
 
-      <span class="error-text" *ngIf="saveError()">{{ saveError() }}</span>
-      <span class="success-text" *ngIf="saveSuccessMessage()">{{ saveSuccessMessage() }}</span>
+      @if (saveError()) {
+      <span class="error-text">{{ saveError() }}</span>
+      }
+      @if (saveSuccessMessage()) {
+      <span class="success-text">{{ saveSuccessMessage() }}</span>
+      }
     </div>
 
     <div class="modal-footer">
-      <ng-container *ngIf="!saveSuccessMessage(); else closeOnlyFooter">
-        <button type="button" class="toolbar-btn primary" [disabled]="saving()" (click)="onSave()">
-          {{ saving() ? 'Saving...' : 'Save' }}
-        </button>
-        <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">Cancel</button>
-      </ng-container>
-      <ng-template #closeOnlyFooter>
-        <button type="button" class="toolbar-btn primary" (click)="onCancel()">Close</button>
-      </ng-template>
+      @if (!saveSuccessMessage()) {
+      <button type="button" class="toolbar-btn primary" [disabled]="saving()" (click)="onSave()">
+        {{ saving() ? 'Saving...' : 'Save' }}
+      </button>
+      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">Cancel</button>
+      } @else {
+      <button type="button" class="toolbar-btn primary" (click)="onCancel()">Close</button>
+      }
     </div>
   </div>
 </div>

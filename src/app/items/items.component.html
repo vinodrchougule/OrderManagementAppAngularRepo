@@ -44,29 +44,33 @@
     </div>
 
     <!-- Create/Edit Item modal - shown only while formModalOpen() is true -->
+    @if (formModalOpen()) {
     <app-item-form-modal
-      *ngIf="formModalOpen()"
       [item]="editingItem()"
       (closed)="onFormModalClosed()"
     ></app-item-form-modal>
+    }
   </main>
 </div>
 
 <!-- Delete confirmation - a top-level overlay, shown only while confirmDeleteOpen() is true -->
-<div class="confirm-overlay" *ngIf="confirmDeleteOpen()" (appBackdropClose)="onConfirmDeleteNo()">
+@if (confirmDeleteOpen()) {
+<div class="confirm-overlay" (appBackdropClose)="onConfirmDeleteNo()">
   <div class="confirm-box">
-    <ng-container *ngIf="!deleteSuccessMessage(); else deleteSuccessTpl">
-      <p class="confirm-message">Are you sure, to delete this Item?</p>
-      <span class="error-text" *ngIf="deleteError()">{{ deleteError() }}</span>
-      <div class="confirm-actions">
-        <button type="button" class="toolbar-btn danger" [disabled]="deleting()" (click)="onConfirmDeleteYes()">
-          {{ deleting() ? 'Deleting...' : 'Yes' }}
-        </button>
-        <button type="button" class="toolbar-btn" [disabled]="deleting()" (click)="onConfirmDeleteNo()">No</button>
-      </div>
-    </ng-container>
-    <ng-template #deleteSuccessTpl>
-      <p class="confirm-message success-text">{{ deleteSuccessMessage() }}</p>
-    </ng-template>
+    @if (!deleteSuccessMessage()) {
+    <p class="confirm-message">Are you sure, to delete this Item?</p>
+    @if (deleteError()) {
+    <span class="error-text">{{ deleteError() }}</span>
+    }
+    <div class="confirm-actions">
+      <button type="button" class="toolbar-btn danger" [disabled]="deleting()" (click)="onConfirmDeleteYes()">
+        {{ deleting() ? 'Deleting...' : 'Yes' }}
+      </button>
+      <button type="button" class="toolbar-btn" [disabled]="deleting()" (click)="onConfirmDeleteNo()">No</button>
+    </div>
+    } @else {
+    <p class="confirm-message success-text">{{ deleteSuccessMessage() }}</p>
+    }
   </div>
 </div>
+}

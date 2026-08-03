@@ -194,11 +194,30 @@ export class CreateOrderModalComponent implements OnInit {
   }
 
   // createOrder() uses responseType: 'text', so err.error holds the API's raw
-  // response body (its actual error text) on failure - fall back to err.message
-  // only for network-level failures (e.g. CORS, connection refused) that never
-  // reached the server and so have no response body.
+  // response body as a string - which for validation failures is itself a JSON object
+  // (e.g. {"status":400,"message":"Validation failed","errors":[{"Key":"CustomerId","Value":["CustomerId is required."]}]}),
+  // so pull out the actual per-field messages rather than showing the whole blob or
+  // just the generic "message" wrapper text. Falls back to the raw string, then
+  // err.message, for shapes that aren't that JSON envelope (e.g. network-level
+  // failures that never reached the server).
   private extractErrorMessage(err: HttpErrorResponse): string {
     if (typeof err.error === 'string' && err.error.trim().length > 0) {
+      try {
+        const parsed = JSON.parse(err.error);
+        if (Array.isArray(parsed?.errors) && parsed.errors.length > 0) {
+          const messages = parsed.errors
+            .flatMap((e: any) => (Array.isArray(e?.Value) ? e.Value : []))
+            .filter((m: any) => typeof m === 'string' && m.trim().length > 0);
+          if (messages.length > 0) {
+            return messages.join(' ');
+          }
+        }
+        if (parsed && typeof parsed.message === 'string' && parsed.message.trim().length > 0) {
+          return parsed.message;
+        }
+      } catch {
+        // not JSON - fall through and show the raw string
+      }
       return err.error;
     }
     return err.message || 'Failed to save order. Please try again.';

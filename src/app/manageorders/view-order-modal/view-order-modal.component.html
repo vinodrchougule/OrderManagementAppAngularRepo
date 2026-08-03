@@ -56,16 +56,20 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of order.items">
+            @for (item of order.items; track $index) {
+            <tr>
               <td class="col-center">{{ item.itemId }}</td>
               <td>{{ item.itemName }}</td>
               <td class="col-center">{{ item.quantity }}</td>
               <td class="col-right">{{ item.unitPrice.toFixed(2) }}</td>
               <td class="col-right">{{ item.lineTotal.toFixed(2) }}</td>
             </tr>
-            <tr *ngIf="!order.items || order.items.length === 0">
+            }
+            @if (!order.items || order.items.length === 0) {
+            <tr>
               <td class="empty-row" colspan="5">No item details available.</td>
             </tr>
+            }
           </tbody>
         </table>
       </div>
@@ -81,20 +85,23 @@
 
 <!-- Delete confirmation - a separate top-level overlay (sibling of modal-backdrop,
      not nested inside modal-card) so it isn't affected by the card's drag transform/overflow. -->
-<div class="confirm-overlay" *ngIf="confirmDeleteOpen()" (appBackdropClose)="onConfirmDeleteNo()">
+@if (confirmDeleteOpen()) {
+<div class="confirm-overlay" (appBackdropClose)="onConfirmDeleteNo()">
   <div class="confirm-box">
-    <ng-container *ngIf="!deleteSuccessMessage(); else deleteSuccessTpl">
-      <p class="confirm-message">Are you sure, to delete this Order?</p>
-      <span class="error-text" *ngIf="deleteError()">{{ deleteError() }}</span>
-      <div class="confirm-actions">
-        <button type="button" class="toolbar-btn danger" [disabled]="deleting()" (click)="onConfirmDeleteYes()">
-          {{ deleting() ? 'Deleting...' : 'Yes' }}
-        </button>
-        <button type="button" class="toolbar-btn" [disabled]="deleting()" (click)="onConfirmDeleteNo()">No</button>
-      </div>
-    </ng-container>
-    <ng-template #deleteSuccessTpl>
-      <p class="confirm-message success-text">{{ deleteSuccessMessage() }}</p>
-    </ng-template>
+    @if (!deleteSuccessMessage()) {
+    <p class="confirm-message">Are you sure, to delete this Order?</p>
+    @if (deleteError()) {
+    <span class="error-text">{{ deleteError() }}</span>
+    }
+    <div class="confirm-actions">
+      <button type="button" class="toolbar-btn danger" [disabled]="deleting()" (click)="onConfirmDeleteYes()">
+        {{ deleting() ? 'Deleting...' : 'Yes' }}
+      </button>
+      <button type="button" class="toolbar-btn" [disabled]="deleting()" (click)="onConfirmDeleteNo()">No</button>
+    </div>
+    } @else {
+    <p class="confirm-message success-text">{{ deleteSuccessMessage() }}</p>
+    }
   </div>
 </div>
+}

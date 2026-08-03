@@ -16,14 +16,19 @@
           placeholder="Enter username"
           [class.invalid]="f['username'].invalid && (f['username'].touched || submitted())"
         />
-        <div
-          class="error-text"
-          *ngIf="f['username'].invalid && (f['username'].touched || submitted())"
-        >
-          <span *ngIf="f['username'].errors?.['required']">Username is required.</span>
-          <span *ngIf="f['username'].errors?.['minlength']">Username must be at least 3 characters.</span>
-          <span *ngIf="f['username'].errors?.['maxlength']">Username cannot exceed 20 characters.</span>
+        @if (f['username'].invalid && (f['username'].touched || submitted())) {
+        <div class="error-text">
+          @if (f['username'].errors?.['required']) {
+          <span>Username is required.</span>
+          }
+          @if (f['username'].errors?.['minlength']) {
+          <span>Username must be at least 3 characters.</span>
+          }
+          @if (f['username'].errors?.['maxlength']) {
+          <span>Username cannot exceed 20 characters.</span>
+          }
         </div>
+        }
       </div>
 
       <!-- Email -->
@@ -36,13 +41,16 @@
           placeholder="Enter email address"
           [class.invalid]="f['email'].invalid && (f['email'].touched || submitted())"
         />
-        <div
-          class="error-text"
-          *ngIf="f['email'].invalid && (f['email'].touched || submitted())"
-        >
-          <span *ngIf="f['email'].errors?.['required']">Email is required.</span>
-          <span *ngIf="f['email'].errors?.['email']">Enter a valid email address.</span>
+        @if (f['email'].invalid && (f['email'].touched || submitted())) {
+        <div class="error-text">
+          @if (f['email'].errors?.['required']) {
+          <span>Email is required.</span>
+          }
+          @if (f['email'].errors?.['email']) {
+          <span>Enter a valid email address.</span>
+          }
         </div>
+        }
       </div>
 
       <!-- Password -->
@@ -55,14 +63,19 @@
           placeholder="Enter password"
           [class.invalid]="f['password'].invalid && (f['password'].touched || submitted())"
         />
-        <div
-          class="error-text"
-          *ngIf="f['password'].invalid && (f['password'].touched || submitted())"
-        >
-          <span *ngIf="f['password'].errors?.['required']">Password is required.</span>
-          <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 8 characters.</span>
-          <span *ngIf="f['password'].errors?.['weakPassword']">Password must include at least one letter and one number.</span>
+        @if (f['password'].invalid && (f['password'].touched || submitted())) {
+        <div class="error-text">
+          @if (f['password'].errors?.['required']) {
+          <span>Password is required.</span>
+          }
+          @if (f['password'].errors?.['minlength']) {
+          <span>Password must be at least 8 characters.</span>
+          }
+          @if (f['password'].errors?.['weakPassword']) {
+          <span>Password must include at least one letter and one number.</span>
+          }
         </div>
+        }
       </div>
 
       <!-- Role -->
@@ -74,23 +87,30 @@
           [class.invalid]="f['role'].invalid && (f['role'].touched || submitted())"
         >
           <option value="" disabled>Select a role</option>
-          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          @for (r of roles; track r) {
+          <option [value]="r">{{ r }}</option>
+          }
         </select>
-        <div
-          class="error-text"
-          *ngIf="f['role'].invalid && (f['role'].touched || submitted())"
-        >
-          <span *ngIf="f['role'].errors?.['required']">Please select a role.</span>
+        @if (f['role'].invalid && (f['role'].touched || submitted())) {
+        <div class="error-text">
+          @if (f['role'].errors?.['required']) {
+          <span>Please select a role.</span>
+          }
         </div>
+        }
       </div>
 
-      <div class="success-message" *ngIf="successMessage()">
+      @if (successMessage()) {
+      <div class="success-message">
         {{ successMessage() }}
       </div>
+      }
 
-      <div class="server-error" *ngIf="serverError()">
+      @if (serverError()) {
+      <div class="server-error">
         {{ serverError() }}
       </div>
+      }
 
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="submitting()">
