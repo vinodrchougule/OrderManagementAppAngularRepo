@@ -1,0 +1,76 @@
+<div class="page-wrapper">
+  <app-header></app-header>
+
+  <main class="page-content">
+    <h2 class="page-title">Roles</h2>
+
+    <div class="roles-toolbar">
+      <div class="search-group">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search roles..."
+          [value]="quickFilterText()"
+          (input)="onQuickFilterInput($any($event.target).value)"
+        />
+        <button type="button" class="toolbar-btn" (click)="onClearSearch()">Clear</button>
+      </div>
+
+      <div class="toolbar-actions">
+        <button type="button" class="toolbar-btn primary" (click)="onCreateNewRole()">
+          <svg class="plus-icon" width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor" />
+          </svg>
+          Create New Role
+        </button>
+      </div>
+    </div>
+
+    <div class="grid-wrapper">
+      <ag-grid-angular
+        class="roles-grid"
+        [theme]="theme"
+        [rowData]="rowData()"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [quickFilterText]="quickFilterText()"
+        [pagination]="true"
+        [paginationPageSize]="10"
+        [paginationPageSizeSelector]="[10, 25, 50]"
+        [domLayout]="'autoHeight'"
+        [loading]="loading()"
+        [animateRows]="true"
+      />
+    </div>
+
+    <!-- Create/Edit Role modal - shown only while formModalOpen() is true -->
+    @if (formModalOpen()) {
+    <app-role-form-modal
+      [role]="editingRole()"
+      (closed)="onFormModalClosed()"
+    ></app-role-form-modal>
+    }
+  </main>
+</div>
+
+<!-- Delete confirmation - a top-level overlay, shown only while confirmDeleteOpen() is true -->
+@if (confirmDeleteOpen()) {
+<div class="confirm-overlay" (appBackdropClose)="onConfirmDeleteNo()">
+  <div class="confirm-box">
+    @if (!deleteSuccessMessage()) {
+    <p class="confirm-message">Are you sure, to delete this Role?</p>
+    @if (deleteError()) {
+    <span class="error-text">{{ deleteError() }}</span>
+    }
+    <div class="confirm-actions">
+      <button type="button" class="toolbar-btn danger" [disabled]="deleting()" (click)="onConfirmDeleteYes()">
+        {{ deleting() ? 'Deleting...' : 'Yes' }}
+      </button>
+      <button type="button" class="toolbar-btn" [disabled]="deleting()" (click)="onConfirmDeleteNo()">No</button>
+    </div>
+    } @else {
+    <p class="confirm-message success-text">{{ deleteSuccessMessage() }}</p>
+    }
+  </div>
+</div>
+}

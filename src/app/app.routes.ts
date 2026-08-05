@@ -6,6 +6,7 @@ import { HomeComponent } from './home/home.component';
 import { ManageOrdersComponent } from './manageorders/manageorders.component';
 import { CustomersComponent } from './customers/customers.component';
 import { ItemsComponent } from './items/items.component';
+import { RolesComponent } from './roles/roles.component';
 import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
@@ -16,5 +17,6 @@ export const routes: Routes = [
   { path: 'manageorders', component: ManageOrdersComponent, canActivate: [authGuard] },
   { path: 'customers', component: CustomersComponent, canActivate: [authGuard] },
   { path: 'items', component: ItemsComponent, canActivate: [authGuard] },
+  { path: 'roles', component: RolesComponent, canActivate: [authGuard] },
   { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];

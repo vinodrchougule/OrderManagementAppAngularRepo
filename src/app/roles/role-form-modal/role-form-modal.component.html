@@ -1,0 +1,47 @@
+<div class="modal-backdrop" (appBackdropClose)="onCancel()">
+  <div class="modal-card" appDraggableModal>
+    <div class="modal-header">
+      <h3>{{ isEdit ? 'Edit Role' : 'Create New Role' }}</h3>
+      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="form" class="header-fields">
+        @if (isEdit) {
+        <div class="form-group">
+          <label>Role Id</label>
+          <input type="text" class="form-input" [value]="role!.roleId" readonly />
+        </div>
+        }
+
+        <div class="form-group">
+          <label>Role Name <span class="required-mark">*</span></label>
+          <input type="text" class="form-input" formControlName="roleName" placeholder="Enter role name" />
+          @if (submitted() && f['roleName'].invalid) {
+          <span class="error-text">
+            Role Name is required.
+          </span>
+          }
+        </div>
+      </form>
+
+      @if (saveError()) {
+      <span class="error-text">{{ saveError() }}</span>
+      }
+      @if (saveSuccessMessage()) {
+      <span class="success-text">{{ saveSuccessMessage() }}</span>
+      }
+    </div>
+
+    <div class="modal-footer">
+      @if (!saveSuccessMessage()) {
+      <button type="button" class="toolbar-btn primary" [disabled]="saving()" (click)="onSave()">
+        {{ saving() ? 'Saving...' : 'Save' }}
+      </button>
+      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">Cancel</button>
+      } @else {
+      <button type="button" class="toolbar-btn primary" (click)="onCancel()">Close</button>
+      }
+    </div>
+  </div>
+</div>
