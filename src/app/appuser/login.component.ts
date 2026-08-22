@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
@@ -25,7 +25,7 @@ export interface UserLogin {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   submitting = signal(false);
   submitted = signal(false);
   serverError = signal('');
@@ -46,6 +46,17 @@ export class LoginComponent {
       password: ['', [Validators.required, Validators.minLength(8)]],
       rememberMe: [false]
     });
+  }
+
+  ngOnInit(): void {
+    const remembered = this.authService.getRememberedCredentials();
+    if (remembered) {
+      this.loginForm.patchValue({
+        username: remembered.userName,
+        password: remembered.password,
+        rememberMe: true
+      });
+    }
   }
 
   get f() {
@@ -74,6 +85,15 @@ export class LoginComponent {
         this.submitting.set(false);
         this.successMessage.set((res && res['message']) || 'Login successful!');
         this.authService.setSession(res);
+
+        if (formValue.rememberMe) {
+          this.authService.rememberCredentials({
+            userName: formValue.username,
+            password: formValue.password
+          });
+        } else {
+          this.authService.forgetCredentials();
+        }
 
         // Briefly show the success message before redirecting to Home.
         setTimeout(() => this.router.navigate(['/home']), 900);

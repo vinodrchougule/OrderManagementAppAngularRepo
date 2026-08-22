@@ -19,6 +19,12 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ChangePasswordRequest {
+  userName: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
 export interface LoginResponse {
   id?: number;
   username?: string;
@@ -32,6 +38,12 @@ export interface LoginResponse {
 }
 
 const SESSION_STORAGE_KEY = 'oma_session';
+const REMEMBER_ME_STORAGE_KEY = 'oma_remember_me';
+
+export interface RememberedCredentials {
+  userName: string;
+  password: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -50,6 +62,12 @@ export class AuthService {
 
   login(payload: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.baseUrl}/login`, payload);
+  }
+
+  // POST /api/Auth/change-password - API responds with a plain-text body, not JSON
+  // (same as RoleService/ItemService create/update calls), so responseType must be 'text'.
+  changePassword(payload: ChangePasswordRequest): Observable<string> {
+    return this.http.post(`${this.baseUrl}/change-password`, payload, { responseType: 'text' });
   }
 
   /** Persist the logged-in user's session (called after a successful login). */
@@ -79,6 +97,33 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this._currentUser();
+  }
+
+  /** Persists the given credentials so the login form can be pre-filled next time. */
+  rememberCredentials(credentials: RememberedCredentials): void {
+    try {
+      localStorage.setItem(REMEMBER_ME_STORAGE_KEY, JSON.stringify(credentials));
+    } catch {
+      // localStorage unavailable (e.g. private browsing) - ignore.
+    }
+  }
+
+  /** Removes any previously remembered credentials. */
+  forgetCredentials(): void {
+    try {
+      localStorage.removeItem(REMEMBER_ME_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  }
+
+  getRememberedCredentials(): RememberedCredentials | null {
+    try {
+      const raw = localStorage.getItem(REMEMBER_ME_STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as RememberedCredentials) : null;
+    } catch {
+      return null;
+    }
   }
 
   private readStoredSession(): LoginResponse | null {
