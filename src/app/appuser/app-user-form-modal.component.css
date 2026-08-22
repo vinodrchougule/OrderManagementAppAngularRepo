@@ -1,0 +1,160 @@
+/* Full-viewport overlay; flex-centers the card and scrolls the backdrop on
+   very short screens so the card is never clipped. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(17, 24, 39, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  background-color: #eef2fb;
+  border-radius: 10px 10px 0 0;
+  cursor: move;
+  user-select: none;
+  z-index: 1;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.icon-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+  color: #6b7280;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.icon-close-btn:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.modal-body {
+  padding: 18px 20px;
+}
+
+.header-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.required-mark {
+  color: #b91c1c;
+}
+
+.form-input {
+  padding: 9px 10px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fff;
+  width: 100%;
+}
+
+.form-input:focus {
+  border-color: #2563eb;
+}
+
+.form-input[readonly] {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.error-text {
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+.success-text {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #eef2fb;
+  border-radius: 0 0 10px 10px;
+  flex-wrap: wrap;
+}
+
+/* Buttons mirror .toolbar-btn / .toolbar-btn.primary used across the app - duplicated here
+   since component styles don't cross component boundaries under Angular's view encapsulation. */
+.toolbar-btn {
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.toolbar-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.toolbar-btn.primary {
+  color: #ffffff;
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.toolbar-btn.primary:hover {
+  background-color: #1d4ed8;
+}
