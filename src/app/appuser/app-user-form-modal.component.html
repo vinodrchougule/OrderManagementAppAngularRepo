@@ -2,7 +2,7 @@
   <div class="modal-card" appDraggableModal>
     <div class="modal-header">
       <h3>Edit App User</h3>
-      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()">✕</button>
+      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
     </div>
 
     <div class="modal-body">
@@ -13,13 +13,8 @@
         </div>
 
         <div class="form-group">
-          <label>Username <span class="required-mark">*</span></label>
-          <input type="text" class="form-input" formControlName="username" placeholder="Enter username" />
-          @if (submitted() && f['username'].invalid) {
-          <span class="error-text">
-            Username is required.
-          </span>
-          }
+          <label>Username</label>
+          <input type="text" class="form-input" formControlName="username" readonly />
         </div>
 
         <div class="form-group">
@@ -27,7 +22,7 @@
           <input type="email" class="form-input" formControlName="email" placeholder="Enter email" />
           @if (submitted() && f['email'].invalid) {
           <span class="error-text">
-            A valid email is required.
+            Enter a valid email address (e.g. name&#64;example.com).
           </span>
           }
         </div>
@@ -59,11 +54,18 @@
     <div class="modal-footer">
       @if (!saveSuccessMessage()) {
       <button type="button" class="toolbar-btn primary" [disabled]="saving()" (click)="onSave()">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
         {{ saving() ? 'Saving...' : 'Save' }}
       </button>
-      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">Cancel</button>
+      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">
+        <i class="bi bi-x-circle icon-gray" aria-hidden="true"></i>
+        Cancel
+      </button>
       } @else {
-      <button type="button" class="toolbar-btn primary" (click)="onCancel()">Close</button>
+      <button type="button" class="toolbar-btn primary" (click)="onCancel()">
+        <i class="bi bi-check2-circle" aria-hidden="true"></i>
+        Close
+      </button>
       }
     </div>
   </div>

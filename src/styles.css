@@ -79,3 +79,28 @@ body {
 .actions-col-bg {
   background-color: #f5f8ff;
 }
+
+/* Semantic colors for Bootstrap Icons (<i class="bi bi-*">) used inside buttons.
+   Bootstrap Icons are font glyphs colored via `color`, not `fill`, so plain
+   `currentColor` (i.e. no class) already matches a button's own text color -
+   these classes only need to be added where a button has no color of its own
+   (e.g. a neutral/white button) and should still show a distinct icon color. */
+.icon-blue {
+  color: #2563eb;
+}
+
+.icon-red {
+  color: #dc2626;
+}
+
+.icon-gray {
+  color: #6b7280;
+}
+
+.icon-indigo {
+  color: #4f46e5;
+}
+
+.icon-teal {
+  color: #0891b2;
+}

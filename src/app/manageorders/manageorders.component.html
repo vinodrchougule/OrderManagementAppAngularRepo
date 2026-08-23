@@ -13,19 +13,21 @@
           [value]="quickFilterText()"
           (input)="onQuickFilterInput($any($event.target).value)"
         />
-        <button type="button" class="toolbar-btn" (click)="onClearSearch()">Clear</button>
+        <button type="button" class="toolbar-btn" (click)="onClearSearch()">
+          <i class="bi bi-eraser-fill icon-teal" aria-hidden="true"></i>
+          Clear
+        </button>
       </div>
 
       <div class="toolbar-actions">
         <button type="button" class="toolbar-btn primary" (click)="onCreateNewOrder()">
-          <svg class="plus-icon" width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor" />
-          </svg>
+          <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
           Create New Order
         </button>
 
         <div class="columns-menu">
           <button type="button" class="toolbar-btn" (click)="toggleColumnsMenu()">
+            <i class="bi bi-layout-three-columns icon-indigo" aria-hidden="true"></i>
             Columns
           </button>
           @if (columnsMenuOpen()) {
@@ -45,6 +47,7 @@
         </div>
 
         <button type="button" class="toolbar-btn primary" (click)="onExportExcel()">
+          <i class="bi bi-file-earmark-excel-fill" aria-hidden="true"></i>
           Export to Excel
         </button>
       </div>

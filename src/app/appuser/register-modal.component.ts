@@ -1,7 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -12,33 +11,37 @@ import {
 } from '@angular/forms';
 
 import { AuthService, RegisterRequest } from '../services/auth.service';
+import { RoleOption, RoleService } from '../services/role.service';
+import { DraggableModalDirective } from '../shared/draggable-modal.directive';
+import { BackdropCloseDirective } from '../shared/backdrop-close.directive';
 
-
-export interface UserRegistration {
-  username: string;
-  email: string;
-  password: string;
-  role: string;
-}
-
+/**
+ * "Register New App User" modal - shown as an overlay (from the Login page and from the
+ * App Users page) instead of navigating to the standalone /register page. Calls
+ * AuthService.register() itself and shows a success message while staying open (same
+ * pattern as AppUserFormModalComponent) - the caller only refreshes/redirects once the
+ * modal actually closes.
+ */
 @Component({
-  selector: 'app-register',
+  selector: 'app-register-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+  imports: [CommonModule, ReactiveFormsModule, DraggableModalDirective, BackdropCloseDirective],
+  templateUrl: './register-modal.component.html',
+  styleUrls: ['./register-modal.component.css']
 })
-export class RegisterComponent {
-  roles: string[] = ['Admin', 'Manager', 'Employee', 'Customer'];
+export class RegisterModalComponent implements OnInit {
+  @Output() closed = new EventEmitter<void>();
+
+  roleOptions = signal<RoleOption[]>([]);
 
   submitting = signal(false);
   submitted = signal(false);
   serverError = signal('');
   successMessage = signal('');
 
-  registerForm!: FormGroup;
+  registerForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private roleService: RoleService) {
     this.registerForm = this.fb.group({
       username: [
         '',
@@ -50,7 +53,7 @@ export class RegisterComponent {
         [
           Validators.required,
           Validators.minLength(8),
-          RegisterComponent.passwordStrengthValidator
+          RegisterModalComponent.passwordStrengthValidator
         ]
       ],
       role: ['', Validators.required]
@@ -71,6 +74,12 @@ export class RegisterComponent {
     return this.registerForm.controls;
   }
 
+  ngOnInit(): void {
+    this.roleService.getRoles().subscribe({
+      next: (roles) => this.roleOptions.set(roles)
+    });
+  }
+
   onSubmit(): void {
     this.submitted.set(true);
     this.serverError.set('');
@@ -82,14 +91,12 @@ export class RegisterComponent {
     }
 
     this.submitting.set(true);
-    const payload: RegisterRequest = this.registerForm.value as UserRegistration;
+    const payload: RegisterRequest = this.registerForm.value as RegisterRequest;
 
     this.authService.register(payload).subscribe({
       next: () => {
         this.submitting.set(false);
-        this.successMessage.set('Registration successful! You can now log in.');
-        this.registerForm.reset();
-        this.submitted.set(false);
+        this.successMessage.set('Registration successful!');
       },
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
@@ -100,10 +107,7 @@ export class RegisterComponent {
   }
 
   onCancel(): void {
-    this.registerForm.reset();
-    this.submitted.set(false);
-    this.serverError.set('');
-    this.successMessage.set('');
+    this.closed.emit();
   }
 
   private extractErrorMessage(err: HttpErrorResponse): string {

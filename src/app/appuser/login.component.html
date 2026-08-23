@@ -75,13 +75,19 @@
 
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+          <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
           {{ submitting() ? 'Logging in...' : 'Log In' }}
         </button>
       </div>
 
       <p class="signup-prompt">
-        Don't have an account? <a routerLink="/register" class="link">Register</a>
+        Don't have an account?
+        <a href="javascript:void(0)" class="link" (click)="registerModalOpen.set(true)">Register</a>
       </p>
     </form>
   </div>
 </div>
+
+@if (registerModalOpen()) {
+<app-register-modal (closed)="registerModalOpen.set(false)"></app-register-modal>
+}

@@ -2,7 +2,7 @@
   <div class="modal-card" appDraggableModal>
     <div class="modal-header">
       <h3>View Order</h3>
-      <button type="button" class="icon-close-btn" title="Close" (click)="onClose()">✕</button>
+      <button type="button" class="icon-close-btn" title="Close" (click)="onClose()"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
     </div>
 
     <div class="modal-body">
@@ -76,9 +76,18 @@
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="toolbar-btn primary" (click)="onEdit()">Edit Order</button>
-      <button type="button" class="toolbar-btn danger" (click)="onDeleteClick()">Delete Order</button>
-      <button type="button" class="toolbar-btn" (click)="onClose()">Close</button>
+      <button type="button" class="toolbar-btn primary" (click)="onEdit()">
+        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+        Edit Order
+      </button>
+      <button type="button" class="toolbar-btn danger" (click)="onDeleteClick()">
+        <i class="bi bi-trash-fill" aria-hidden="true"></i>
+        Delete Order
+      </button>
+      <button type="button" class="toolbar-btn" (click)="onClose()">
+        <i class="bi bi-x-circle icon-gray" aria-hidden="true"></i>
+        Close
+      </button>
     </div>
   </div>
 </div>
@@ -95,9 +104,13 @@
     }
     <div class="confirm-actions">
       <button type="button" class="toolbar-btn danger" [disabled]="deleting()" (click)="onConfirmDeleteYes()">
+        <i class="bi bi-trash-fill" aria-hidden="true"></i>
         {{ deleting() ? 'Deleting...' : 'Yes' }}
       </button>
-      <button type="button" class="toolbar-btn" [disabled]="deleting()" (click)="onConfirmDeleteNo()">No</button>
+      <button type="button" class="toolbar-btn" [disabled]="deleting()" (click)="onConfirmDeleteNo()">
+        <i class="bi bi-x-circle icon-gray" aria-hidden="true"></i>
+        No
+      </button>
     </div>
     } @else {
     <p class="confirm-message success-text">{{ deleteSuccessMessage() }}</p>

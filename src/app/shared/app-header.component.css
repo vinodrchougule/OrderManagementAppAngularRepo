@@ -38,6 +38,9 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .logout-btn:hover {

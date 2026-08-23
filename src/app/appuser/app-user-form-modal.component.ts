@@ -34,8 +34,11 @@ export class AppUserFormModalComponent implements OnInit {
 
   constructor(private fb: FormBuilder, private appUserService: AppUserService, private roleService: RoleService) {
     this.form = this.fb.group({
-      username: ['', [Validators.required, Validators.maxLength(50)]],
-      email: ['', [Validators.required, Validators.email]],
+      username: [''],
+      // Angular's built-in "email" validator alone accepts domains with no dot
+      // (e.g. "user@localhost"); the pattern below additionally requires a dot
+      // after the @ so a real domain suffix (e.g. ".com") is mandatory.
+      email: ['', [Validators.required, Validators.email, Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)]],
       role: ['', Validators.required]
     });
   }

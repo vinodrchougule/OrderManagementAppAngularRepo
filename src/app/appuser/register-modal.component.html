@@ -1,0 +1,86 @@
+<div class="modal-backdrop" (appBackdropClose)="onCancel()">
+  <div class="modal-card" appDraggableModal>
+    <div class="modal-header">
+      <h3>Register New App User</h3>
+      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="registerForm" class="header-fields">
+        <div class="form-group">
+          <label>Username <span class="required-mark">*</span></label>
+          <input type="text" class="form-input" formControlName="username" placeholder="Enter username" />
+          @if (submitted() && f['username'].invalid) {
+          <span class="error-text">
+            @if (f['username'].errors?.['required']) { Username is required. }
+            @if (f['username'].errors?.['minlength']) { Username must be at least 3 characters. }
+            @if (f['username'].errors?.['maxlength']) { Username cannot exceed 20 characters. }
+          </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Email <span class="required-mark">*</span></label>
+          <input type="email" class="form-input" formControlName="email" placeholder="Enter email address" />
+          @if (submitted() && f['email'].invalid) {
+          <span class="error-text">
+            Enter a valid email address.
+          </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Password <span class="required-mark">*</span></label>
+          <input type="password" class="form-input" formControlName="password" placeholder="Enter password" />
+          @if (submitted() && f['password'].invalid) {
+          <span class="error-text">
+            @if (f['password'].errors?.['required']) { Password is required. }
+            @if (f['password'].errors?.['minlength']) { Password must be at least 8 characters. }
+            @if (f['password'].errors?.['weakPassword']) { Password must include at least one letter and one number. }
+          </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Role <span class="required-mark">*</span></label>
+          <select class="form-input" formControlName="role">
+            <option value="" disabled>Select a role</option>
+            @for (roleOption of roleOptions(); track roleOption.roleId) {
+            <option [value]="roleOption.roleName">{{ roleOption.roleName }}</option>
+            }
+          </select>
+          @if (submitted() && f['role'].invalid) {
+          <span class="error-text">
+            Please select a role.
+          </span>
+          }
+        </div>
+      </form>
+
+      @if (serverError()) {
+      <span class="error-text">{{ serverError() }}</span>
+      }
+      @if (successMessage()) {
+      <span class="success-text">{{ successMessage() }}</span>
+      }
+    </div>
+
+    <div class="modal-footer">
+      @if (!successMessage()) {
+      <button type="submit" class="toolbar-btn primary" [disabled]="submitting()" (click)="onSubmit()">
+        <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+        {{ submitting() ? 'Registering...' : 'Register' }}
+      </button>
+      <button type="button" class="toolbar-btn" [disabled]="submitting()" (click)="onCancel()">
+        <i class="bi bi-x-circle icon-gray" aria-hidden="true"></i>
+        Cancel
+      </button>
+      } @else {
+      <button type="button" class="toolbar-btn primary" (click)="onCancel()">
+        <i class="bi bi-check2-circle" aria-hidden="true"></i>
+        Close
+      </button>
+      }
+    </div>
+  </div>
+</div>

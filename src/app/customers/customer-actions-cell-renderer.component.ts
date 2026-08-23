@@ -16,8 +16,8 @@ interface CustomerActionsParams extends ICellRendererParams<CustomerOption> {
   standalone: true,
   template: `
     <div class="row-actions">
-      <button type="button" class="action-btn edit" title="Edit" (click)="onEdit()">✎</button>
-      <button type="button" class="action-btn delete" title="Delete" (click)="onDelete()">🗑</button>
+      <button type="button" class="action-btn edit" title="Edit" (click)="onEdit()"><i class="bi bi-pencil-square icon-blue" aria-hidden="true"></i></button>
+      <button type="button" class="action-btn delete" title="Delete" (click)="onDelete()"><i class="bi bi-trash-fill icon-red" aria-hidden="true"></i></button>
     </div>
   `,
   styles: [

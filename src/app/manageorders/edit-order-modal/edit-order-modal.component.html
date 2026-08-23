@@ -2,7 +2,7 @@
   <div class="modal-card" appDraggableModal>
     <div class="modal-header">
       <h3>Edit Order</h3>
-      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()">✕</button>
+      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
     </div>
 
     <div class="modal-body">
@@ -31,7 +31,7 @@
               [value]="orderDateIso()"
               (change)="onOrderDateChange($any($event.target).value)"
             />
-            <button type="button" class="calendar-btn" title="Choose date" (click)="openDatePicker()">📅</button>
+            <button type="button" class="calendar-btn" title="Choose date" (click)="openDatePicker()"><i class="bi bi-calendar-event icon-blue" aria-hidden="true"></i></button>
           </div>
           @if (submitted() && !orderDateIso()) {
           <span class="error-text">
@@ -125,7 +125,10 @@
 
         <div class="form-group add-item-group">
           <label class="spacer-label">&nbsp;</label>
-          <button type="button" class="toolbar-btn primary add-item-btn" (click)="onAddItem()">Add Item</button>
+          <button type="button" class="toolbar-btn primary add-item-btn" (click)="onAddItem()">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            Add Item
+          </button>
         </div>
       </form>
 
@@ -152,7 +155,7 @@
               <td class="col-right">{{ item.unitPrice.toFixed(2) }}</td>
               <td class="col-right">{{ item.lineTotal.toFixed(2) }}</td>
               <td class="col-center">
-                <button type="button" class="icon-close-btn small" title="Remove" (click)="onRemoveItem(i)">✕</button>
+                <button type="button" class="icon-close-btn small" title="Remove" (click)="onRemoveItem(i)"><i class="bi bi-dash-circle-fill icon-red" aria-hidden="true"></i></button>
               </td>
             </tr>
             }
@@ -182,11 +185,18 @@
     <div class="modal-footer">
       @if (!saveSuccessMessage()) {
       <button type="button" class="toolbar-btn primary" [disabled]="saving()" (click)="onSave()">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
         {{ saving() ? 'Saving...' : 'Save Changes' }}
       </button>
-      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">Cancel</button>
+      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">
+        <i class="bi bi-x-circle icon-gray" aria-hidden="true"></i>
+        Cancel
+      </button>
       } @else {
-      <button type="button" class="toolbar-btn primary" (click)="onCancel()">Close</button>
+      <button type="button" class="toolbar-btn primary" (click)="onCancel()">
+        <i class="bi bi-check2-circle" aria-hidden="true"></i>
+        Close
+      </button>
       }
     </div>
   </div>

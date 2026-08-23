@@ -2,7 +2,7 @@
   <div class="modal-card" appDraggableModal>
     <div class="modal-header">
       <h3>Create New Order</h3>
-      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()">✕</button>
+      <button type="button" class="icon-close-btn" title="Close" (click)="onCancel()"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
     </div>
 
     <div class="modal-body">
@@ -82,7 +82,10 @@
 
         <div class="form-group add-item-group">
           <label class="spacer-label">&nbsp;</label>
-          <button type="button" class="toolbar-btn primary add-item-btn" (click)="onAddItem()">Add Item</button>
+          <button type="button" class="toolbar-btn primary add-item-btn" (click)="onAddItem()">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            Add Item
+          </button>
         </div>
       </form>
 
@@ -108,7 +111,7 @@
               <td class="col-right">{{ item.unitPrice.toFixed(2) }}</td>
               <td class="col-right">{{ item.lineTotal.toFixed(2) }}</td>
               <td class="col-center">
-                <button type="button" class="icon-close-btn small" title="Remove" (click)="onRemoveItem(i)">✕</button>
+                <button type="button" class="icon-close-btn small" title="Remove" (click)="onRemoveItem(i)"><i class="bi bi-dash-circle-fill icon-red" aria-hidden="true"></i></button>
               </td>
             </tr>
             }
@@ -137,9 +140,13 @@
 
     <div class="modal-footer">
       <button type="button" class="toolbar-btn primary" [disabled]="saving()" (click)="onSave()">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
         {{ saving() ? 'Saving...' : 'Save Order' }}
       </button>
-      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">Cancel</button>
+      <button type="button" class="toolbar-btn" [disabled]="saving()" (click)="onCancel()">
+        <i class="bi bi-x-circle icon-gray" aria-hidden="true"></i>
+        Cancel
+      </button>
     </div>
   </div>
 </div>

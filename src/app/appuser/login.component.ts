@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 
 import { AuthService, LoginRequest, LoginResponse } from '../services/auth.service';
+import { RegisterModalComponent } from './register-modal.component';
 
 export interface UserLogin {
   username: string;
@@ -21,7 +22,7 @@ export interface UserLogin {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RegisterModalComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -30,6 +31,7 @@ export class LoginComponent implements OnInit {
   submitted = signal(false);
   serverError = signal('');
   successMessage = signal('');
+  registerModalOpen = signal(false); // shows the Register New App User modal over the login page
 
   loginForm!: FormGroup;
 

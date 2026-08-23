@@ -9,13 +9,21 @@ import { BackdropCloseDirective } from '../shared/backdrop-close.directive';
 import { AppUser, AppUserService } from '../services/appuser.service';
 import { AppUserActionsCellRendererComponent } from './app-user-actions-cell-renderer.component';
 import { AppUserFormModalComponent } from './app-user-form-modal.component';
+import { RegisterModalComponent } from './register-modal.component';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 @Component({
   selector: 'app-app-users',
   standalone: true,
-  imports: [CommonModule, AppHeaderComponent, AgGridAngular, AppUserFormModalComponent, BackdropCloseDirective],
+  imports: [
+    CommonModule,
+    AppHeaderComponent,
+    AgGridAngular,
+    AppUserFormModalComponent,
+    RegisterModalComponent,
+    BackdropCloseDirective
+  ],
   templateUrl: './app-users.component.html',
   styleUrls: ['./app-users.component.css']
 })
@@ -26,6 +34,8 @@ export class AppUsersComponent implements OnInit {
 
   formModalOpen = signal(false); // controls the Edit App User modal's visibility
   editingUser = signal<AppUser | null>(null);
+
+  registerModalOpen = signal(false); // controls the Register New App User modal's visibility
 
   confirmDeleteOpen = signal(false); // controls the "Are you sure...?" dialog
   userPendingDelete = signal<AppUser | null>(null);
@@ -127,6 +137,18 @@ export class AppUsersComponent implements OnInit {
 
   onClearSearch(): void {
     this.quickFilterText.set('');
+  }
+
+  onRegisterNewUser(): void {
+    this.registerModalOpen.set(true);
+  }
+
+  // Covers both a plain Cancel/X (no new user) and Close after a successful registration -
+  // refreshing on every close is a no-op API call in the former case and the actual point
+  // of the latter.
+  onRegisterModalClosed(): void {
+    this.registerModalOpen.set(false);
+    this.loadAppUsers();
   }
 
   onEditUser(user: AppUser): void {

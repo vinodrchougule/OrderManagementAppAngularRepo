@@ -15,7 +15,7 @@ interface OrderActionsParams extends ICellRendererParams<Order> {
   standalone: true,
   template: `
     <div class="row-actions">
-      <button type="button" class="action-btn view" title="View" (click)="onView()">👁</button>
+      <button type="button" class="action-btn view" title="View" (click)="onView()"><i class="bi bi-eye-fill icon-blue" aria-hidden="true"></i></button>
     </div>
   `,
   styles: [
