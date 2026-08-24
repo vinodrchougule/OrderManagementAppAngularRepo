@@ -58,7 +58,7 @@
           <input type="checkbox" formControlName="rememberMe" />
           Remember me
         </label>
-        <a href="javascript:void(0)" class="link">Forgot password?</a>
+        <a routerLink="/forgot-password" class="link">Forgot password?</a>
       </div>
 
       @if (successMessage()) {
@@ -68,7 +68,18 @@
       }
 
       @if (serverError()) {
-      <div class="server-error">
+      <div
+        class="server-error"
+        [class.account-locked]="accountLocked()"
+        [class.attempts-warning]="attemptsWarning()"
+      >
+        <i
+          class="bi"
+          [class.bi-lock-fill]="accountLocked()"
+          [class.bi-exclamation-triangle-fill]="attemptsWarning()"
+          [class.bi-x-circle-fill]="!accountLocked() && !attemptsWarning()"
+          aria-hidden="true"
+        ></i>
         {{ serverError() }}
       </div>
       }

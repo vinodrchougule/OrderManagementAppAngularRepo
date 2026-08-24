@@ -25,6 +25,15 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export interface LoginResponse {
   id?: number;
   username?: string;
@@ -68,6 +77,16 @@ export class AuthService {
   // (same as RoleService/ItemService create/update calls), so responseType must be 'text'.
   changePassword(payload: ChangePasswordRequest): Observable<string> {
     return this.http.post(`${this.baseUrl}/change-password`, payload, { responseType: 'text' });
+  }
+
+  // POST /api/Auth/forgot-password - API responds with a plain-text body, not JSON (same as change-password).
+  forgotPassword(payload: ForgotPasswordRequest): Observable<string> {
+    return this.http.post(`${this.baseUrl}/forgot-password`, payload, { responseType: 'text' });
+  }
+
+  // POST /api/Auth/reset-password - API responds with a plain-text body, not JSON (same as change-password).
+  resetPassword(payload: ResetPasswordRequest): Observable<string> {
+    return this.http.post(`${this.baseUrl}/reset-password`, payload, { responseType: 'text' });
   }
 
   /** Persist the logged-in user's session (called after a successful login). */

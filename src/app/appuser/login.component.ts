@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -22,7 +22,7 @@ export interface UserLogin {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RegisterModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, RegisterModalComponent, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -31,6 +31,8 @@ export class LoginComponent implements OnInit {
   submitted = signal(false);
   serverError = signal('');
   successMessage = signal('');
+  accountLocked = signal(false); // true when the server reports the account is locked out
+  attemptsWarning = signal(false); // true when the server reports remaining login attempts
   registerModalOpen = signal(false); // shows the Register New App User modal over the login page
 
   loginForm!: FormGroup;
@@ -69,6 +71,8 @@ export class LoginComponent implements OnInit {
     this.submitted.set(true);
     this.serverError.set('');
     this.successMessage.set('');
+    this.accountLocked.set(false);
+    this.attemptsWarning.set(false);
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -102,10 +106,19 @@ export class LoginComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
-        this.serverError.set(this.extractErrorMessage(err));
+        const message = this.extractErrorMessage(err);
+        this.serverError.set(message);
+        this.classifyServerError(message);
         console.error('Login request failed:', err);
       }
     });
+  }
+
+  /** Flags the current server error as a lockout or a remaining-attempts warning, so the template can style it accordingly. */
+  private classifyServerError(message: string): void {
+    const lower = message.toLowerCase();
+    this.accountLocked.set(lower.includes('locked'));
+    this.attemptsWarning.set(lower.includes('attempt') && !lower.includes('locked'));
   }
 
   private extractErrorMessage(err: HttpErrorResponse): string {
